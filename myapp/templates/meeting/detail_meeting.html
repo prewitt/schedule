@@ -1,0 +1,42 @@
+{% load dictionary_extras %}
+<br/>
+<br/>
+<br/>
+<h2 style="display: inline">会议详情</h2>
+<a class="btn clear_second_button" href="#first"><i class="icon-remove"></i></a>
+<dl class="dl-horizontal">
+    <dt>名称</dt>
+    <dd>{{ meeting.name }}</dd>
+    <dt>时间</dt>
+    <dd>{{ meeting.time|date:"Y-m-d" }}</dd>
+    <dt>地点</dt>
+    <dd>{{ meeting.place }}</dd>
+    <dt>发起人</dt>
+    <dd>
+                {% ifequal enCalendar True %}
+            <a class="get_others_calendar" url="/calendar/{{ meeting.originator.id }}/"
+               href="#third">{{ meeting.originator }}</a>
+        {% else %}
+            {% ifequal calendar|staff_in:meeting.originator True %}
+                <a class="get_others_calendar" url="/calendar/{{ meeting.originator.id }}/"
+                   href="#third">{{ meeting.originator }}</a>
+            {% else %}
+                {{ meeting.originator }}
+            {% endifequal %}
+        {% endifequal %}
+    </dd>
+    <dt>参加人</dt>
+    <dd>{% for m in meeting.member.all %}
+{% ifequal enCalendar True %}
+                <a class="get_others_calendar" url="/calendar/{{ m.id }}/" href="#third">{{ m }} </a>
+            {% else %}
+                {% ifequal calendar|staff_in:m True %}
+                    <a class="get_others_calendar" url="/calendar/{{ m.id }}/" href="#third">{{ m }} </a>
+                {% else %}
+                    {{ m }}
+                {% endifequal %}
+            {% endifequal %}
+    {% endfor %}</dd>
+    <dt>内容</dt>
+    <dd>{{ meeting.content }}</dd>
+</dl>

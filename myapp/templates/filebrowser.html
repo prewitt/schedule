@@ -1,0 +1,20 @@
+{% load dictionary_extras %}
+<style type="text/css">
+    .modal_filebrowser {
+        display: none;
+        background: #eee;
+        padding: 0 20px 20px;
+        overflow: auto;
+        z-index: 1001;
+        position: absolute;
+        width: 1000px;
+        min-height: 500px;
+        max-height: 800px;
+        left: 100px;
+        top: 100px;
+    }
+</style>
+<div id="modal1_file" class="modal_hide modal modal_filebrowser" style="display:none;">
+{#    {% task_path taskPath %}#}
+    <iframe name="task_file_iframe" id="task_file_iframe" src="/filebrowser/browse/" style="float:left;position:relative;top:-1px;width:1000px;height:500px;"></iframe>
+</div>

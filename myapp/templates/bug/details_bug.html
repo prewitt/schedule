@@ -1,0 +1,101 @@
+{% load static %}
+{% load dictionary_extras %}
+{% include "frame.html" %}
+<br/>
+<br/>
+<h2 style="display: inline">Bug:<strong>{{ bug.name }}</strong>的详细信息</h2>
+
+{#<button class="modalLink btn task_button" href="#modal1_{{ bug.id }}">评论</button>#}
+<a class="btn  clear_second_button" href="#first"><i class="icon-remove"></i></a>
+
+<dl class="dl-horizontal">
+    <dt>名称</dt>
+    <dd>{{ bug.name }}</dd>
+    <dt>创建人</dt>
+    <dd>{{ bug.creator }}</dd>
+    <dt>创建时间</dt>
+    <dd>{{ bug.create_date|date:"Y-m-d" }}</dd>
+    <dt>开始时间</dt>
+    <dd>{{ bug.begin_date|date:"Y-m-d" }}</dd>
+    <dt>结束时间</dt>
+    <dd>{{ bug.end_date|date:"Y-m-d" }}</dd>
+    <dt>状态</dt>
+    <dd>{% ifequal bug.state 1 %}<span class="label label-important">待确认</span>{% endifequal %}
+        {% ifequal bug.state 2 %}<span class="label label-info">进行中</span>{% endifequal %}
+        {% ifequal bug.state 3 %}<span class="label label-warning">待审核</span>{% endifequal %}
+        {% ifequal bug.state 4 %}<span class="label label-success">已结束</span>{% endifequal %}</dd>
+    <dt>等级</dt>
+    <dd>
+        {% ifequal bug.importance 1 %}一般{% endifequal %}
+        {% ifequal bug.importance 2 %}紧急{% endifequal %}
+    </dd>
+    <dt>内容</dt>
+    <dd>{{ bug.content }}</dd>
+    <dt>完成标志</dt>
+    <dd>
+        {% ifequal bug.finish '' %}
+            无
+        {% else %}
+            {{ bug.finish }}
+        {% endifequal %}
+    </dd>
+    <dt>创建人</dt>
+    <dd>
+        {% ifequal enCalendar True %}
+            <a class="get_others_calendar" url="/calendar/{{ bug.creator.id }}/"
+               href="#third">{{ bug.creator }}</a>
+        {% else %}
+            {% ifequal calendar|staff_in:bug.creator True %}
+                <a class="get_others_calendar" url="/calendar/{{ bug.creator.id }}/"
+                   href="#third">{{ bug.creator }}</a>
+            {% else %}
+                {{ task.creator }}
+            {% endifequal %}
+        {% endifequal %}
+    </dd>
+    <dt>负责人</dt>
+    <dd>
+        {% ifequal enCalendar True %}
+            <a class="get_others_calendar" url="/calendar/{{ bug.principal.id }}/"
+               href="#third">{{ bug.principal }}</a>
+        {% else %}
+            {% ifequal calendar|staff_in:bug.principal True %}
+                <a class="get_others_calendar" url="/calendar/{{ bug.principal.id }}/"
+                   href="#third">{{ bug.principal }}</a>
+            {% else %}
+                {{ bug.principal }}
+            {% endifequal %}
+        {% endifequal %}
+    </dd>
+    <dt>执行人</dt>
+    <dd>
+        {% for m in bug.executor.all %}
+            {% ifequal enCalendar True %}
+                <a class="get_others_calendar" url="/calendar/{{ m.id }}/" href="#third">{{ m }} </a>
+            {% else %}
+                {% ifequal calendar|staff_in:m True %}
+                    <a class="get_others_calendar" url="/calendar/{{ m.id }}/" href="#third">{{ m }} </a>
+                {% else %}
+                    {{ m }}
+                {% endifequal %}
+            {% endifequal %}
+        {% endfor %}
+    </dd>
+</dl>
+{#<div class="overlay"></div>#}
+{#<div id="modal1_{{ bug.id }}" class="modal" style="display:none;margin: 0 auto;padding-left:15px;padding-top:10px;">#}
+{#    {% for c in comments %}#}
+{#        {% ifequal c.type 1 %}#}
+{#            {% ifequal c.bug bug %}#}
+{#                {{ c.author }}&nbsp说：#}
+{#                {{ c.content }}<br>#}
+{#            {% endifequal %}#}
+{#        {% endifequal %}#}
+{#    {% endfor %}#}
+{#    <form method="post" class="submit_comment_form" enctype="multipart/form-data"#}
+{#          action="/bug/add_comment/p1{{ bug.id }}p21p33/" style="text-align: center;width:auto;">#}
+{#        {{ nf.as_p }}#}
+{#        <input type="submit" value="提交" class="btn btn-primary"/>&nbsp&nbsp&nbsp#}
+{#        <button class="closeBtn btn btn-primary">返回</button>#}
+{#    </form>#}
+{#</div>#}

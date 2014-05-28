@@ -1,0 +1,120 @@
+{% include 'messages.html' %}
+{% include "dataTables.html" %}
+{% include "frame.html" %}
+<legend><h1>权限管理</h1></legend>
+<form method="post" action="/staff/role/" class="staff_submit_form"  enctype="multipart/form-data">
+    <table class="table table-condensed table_show_detail" >
+        <thead>
+        <tr>
+            <th class="span2">角色名</th>
+{#            <th class="span2">权限等级</th>#}
+            <th class="span2 noFilter">人员管理</th>
+            <th class="span2 noFilter">任务管理</th>
+            <th class="span2 noFilter">日程管理</th>
+            <th class="span2 noFilter">会议管理</th>
+            <th class="span2 noFilter">导出文本</th>
+            <th class="span2 noFilter noSort">操作</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for role in RoleList %}
+            <tr>
+                <td >
+                    <input name="editName{{ role.id }}" class="input-small" type="text" value="{{ role.name }}" {% if role.level < staff.role.level %} disabled="disabled"{% endif %}>
+                </td>
+{#                <td >#}
+{#                    <select  class="input-small" name="editLevel{{ role.id }}" {% if role.level < staff.role.level %} disabled="disabled"{% endif %}>#}
+{#                        {% for level in LevelList %}#}
+{#                            <option value="{{ level }}" {% ifequal  level role.level %} selected="selected"{% endifequal %}>{{ level }}</option>#}
+{#                        {% endfor %}#}
+{#                    </select>#}
+{#                </td>#}
+                <td >
+
+                    <input  name="editStaff{{ role.id }}" type="checkbox" value=""
+                            {% if role.editStaff    %} checked="checked" {% endif %}
+{#                            {% if role.level < staff.role.level %} disabled="disabled"{% endif %} #}
+                            />
+                </td>
+                <td >
+                    <input name="editTask{{ role.id }}" type="checkbox" value=""
+                            {% if role.editTask     %} checked="checked" {% endif %}
+{#                            {% if role.level < staff.role.level %} disabled="disabled"{% endif %} #}
+                            />
+                </td>
+                <td >
+                    <input name="editCalendar{{ role.id }}" type="checkbox" value=""
+                            {% if role.editCalendar %} checked="checked" {% endif %}
+{#                            {% if role.level < staff.role.level %} disabled="disabled"{% endif %} #}
+                            />
+                </td>
+                <td >
+                    <input name="editMeeting{{ role.id }}" type="checkbox" value=""
+                            {% if role.editMeeting  %} checked="checked" {% endif %}
+{#                            {% if role.level < staff.role.level %} disabled="disabled"{% endif %} #}
+                            />
+                </td>
+                <td >
+                    <input name="exportFile{{ role.id }}" type="checkbox" value=""
+                            {% if role.exportFile   %} checked="checked" {% endif %}
+{#                            {% if role.level < staff.role.level %} disabled="disabled"{% endif %} #}
+                            />
+                </td>
+                <td>
+                    <button class="btn btn-primary staff_button" name="editRole" value="{{ role.id }}" type="submit">保存</button>
+                    <button class="btn btn-primary staff_button" name="deleteRole" value="{{ role.id }}" type="submit" onclick="if(confirm('删除权限将会使使用该权限的用户重置为<默认权限>。此操作不可逆。确实要删除该权限吗？')){return true;}return false;">删除</button>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</form>
+<br>
+<br/>
+<h2>添加角色</h2>
+<form method="post" class="staff_submit_form" action="/staff/role/"  id="formAdd" >
+    <table class="table">
+        <tr>
+            <th class="span2">角色名</th>
+{#            <th class="span2">权限等级</th>#}
+            <th class="span2">人员管理</th>
+            <th class="span2">任务管理</th>
+            <th class="span2">日程管理</th>
+            <th class="span2">会议管理</th>
+            <th class="span2">导出文本</th>
+            <th class="span2">操作</th>
+        </tr>
+        <tr>
+            <td >
+                <input class="input-small" name="editName" class="input-small" type="text">
+            </td>
+{#            <td>#}
+{#                <select class="input-small" name="editLevel" >#}
+{#                    {% for level in LevelList %}#}
+{#                        {% if level > request.user.staff.role.level  %}#}
+{#                        <option value="{{ level }}" {% ifequal  level 5 %} selected="selected"{% endifequal  %}>{{ level }}</option>#}
+{#                        {% endif %}#}
+{#                    {% endfor %}#}
+{#                </select>#}
+{#            </td>#}
+            <td >
+                <input name="editStaff" type="checkbox" value=""  />
+            </td>
+            <td >
+                <input name="editTask" type="checkbox" value=""   />
+            </td>
+            <td >
+                <input name="editCalendar" type="checkbox" value=""  />
+            </td>
+            <td >
+                <input name="editMeeting" type="checkbox" value=""  />
+            </td>
+            <td >
+                <input name="exportFile" type="checkbox" value=""  />
+            </td>
+            <td>
+                <button class="btn btn-primary staff_button toTop" name="addRole" type="submit">保存</button>
+            </td>
+        </tr>
+    </table>
+</form>

@@ -1,0 +1,248 @@
+
+{% load static %}
+<style type="text/css" title="currentStyle">
+    {# @import "{% static "css/dataTables/jquery.dataTables.css"%}";#}
+    {# @import "{% static "css/dataTables/jquery.dataTables_themeroller.css"%}";#}
+    @import "{% static "css/dataTables/demo_page.css"%}";
+    @import "{% static "css/dataTables/demo_table.css"%}";
+    {# @import "{% static "css/dataTables/demo_table_jui.css"%}";#}
+    {% if staff.role.exportFile %}
+        @import "{% static "css/tableTools/TableTools.css"%}";
+    {% endif %}
+
+    {# @import "{% static "css/tableTools/TableTools_JUI.css"%}";#}
+</style>
+
+<script type="text/javascript" charset="utf-8">
+var asInitVals = new Array();
+var startTime1="开始时间始";
+var startTime2="开始时间止";
+var endTime1="结束时间始";
+var endTime2="结束时间止";
+/* Custom filtering function which will filter data in column four between two values */
+$.fn.dataTableExt.afnFiltering.push(
+        function( oSettings, aData, iDataIndex ) {
+            {#                re = new RegExp("-", "g");#}
+            if(!document.getElementById('time_start1')&&!document.getElementById('time_end1')&&!document.getElementById('time_start2')&&!document.getElementById('time_end2'))
+            {
+                return true;
+            }
+            var iMin1 = document.getElementById('time_start1').value;
+            var iMax1 = document.getElementById('time_end1').value;
+            var iMin2 = document.getElementById('time_start2').value;
+            var iMax2 = document.getElementById('time_end2').value;
+
+            var iVersionStart = aData[1];
+            var iVersionEnd   = aData[2];
+            //        alert(iVersionStart+" "+iVersionEnd+" "+iMin1+" "+iMax1);
+            if(iMin1!=startTime1&&iMin2!=startTime2&&(iMax1==endTime1||iMax2==endTime2))
+            {
+                if(iVersionStart>=iMin1&&iVersionStart<=iMin2)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else if(iMax1!=endTime1&&iMax2!=endTime2&&(iMin1==startTime1||iMin2==startTime2))
+            {
+                if(iVersionEnd>=iMax1&&iVersionEnd<=iMax2)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else if(iMax1!=endTime1&&iMax2!=endTime2&&iMin1!=startTime1&&iMin2!=startTime2)
+            {
+                if(iVersionStart>=iMin1&&iVersionStart<=iMin2&&iVersionEnd>=iMax1&&iVersionEnd<=iMax2)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return true;
+            }
+
+        }
+);
+$(document).ready(function () {
+    var oTable = $('.table_show_detail').dataTable({
+        {#"bJQueryUI": true,#}
+        "sPaginationType": "full_numbers",
+        "bPaginate": true, //翻页功能
+        "bLengthChange": true, //改变每页显示数据数量
+        "bFilter": true, //过滤功能
+        "bSort": true, //排序功能
+        "bInfo": true,//页脚信息
+        "bAutoWidth": true,//自动宽度
+        "bStateSave": true, //缓存
+        "aaSorting": [[ 1, "desc" ]],
+        "sScrollX": "100%",
+        "bScrollCollapse": true,
+        "bProcessing": true,
+        "bDeferRender": true,
+        "bSortClasses":false,
+        "stateSave": true,
+        "aoColumnDefs": [
+            { 'bSearchable': false, 'aTargets': [ 'noFilter' ] },
+            { 'bSortable': false, 'aTargets': [ 'noSort' ] }
+        ],
+        "sDom": 'T<"clear">lfrtip',
+        {% if staff.role.exportFile %}
+            "oTableTools": {
+                "sSwfPath": "{% static "swf/tableTools/copy_csv_xls_pdf.swf"%}",
+                "aButtons": [
+                    {
+                        "sExtends": "copy",
+                        "sButtonText": "复制",
+                        "fnComplete": function(nButton, oConfig, flash, text) {
+                            var
+                                    lines = text.split('\n').length,
+                                    len = this.s.dt.nTFoot === null ? lines-1 : lines-2,
+                                    plural = (len==1) ? "" : "s";
+                            this.fnInfo( '<h6>表格复制</h6>'+
+                                    '<p>已复制'+len+'项数据到粘贴板</p>',
+                                    1500
+                            );
+                        }
+                    },
+                    {"sExtends": "xls", "sButtonText": "CSV", "sFileName": "*.csv"},
+                    {"sExtends": "xls", "sFileName": "*.xls"},
+                    {#                    {#}
+                    {#                        "sExtends": "collection",#}
+                    {#                        "sButtonText": "导出",#}
+                    {#                        "aButtons": [ "csv", {"sExtends": "xls", "sFileName": "*.xls"} ]#}
+                    {#                    },#}
+                    {
+                        "sExtends": "print",
+                        "sButtonText": "打印",
+                        "sInfo": "<h6>打印预览</h6><p>请用浏览器的打印功能打印该页面，Esc键退出。"
+                    }
+                ]
+
+            },
+        {% endif %}
+        "oLanguage": {
+            "sLengthMenu": "每页显示 _MENU_ 条记录",
+            "sZeroRecords": "抱歉， 没有找到",
+            "sInfo": "显示第 _START_ 至 _END_ 项记录/共 _TOTAL_ 项",
+            "sInfoEmpty": "没有数据",
+            "sInfoFiltered": "(从 _MAX_ 条数据中检索)",
+            "sSearch": "搜索所有内容：",
+            "oPaginate": {
+                "sFirst": "首页",
+                "sPrevious": "前一页",
+                "sNext": "后一页",
+                "sLast": "尾页"
+            }
+        }
+
+    });
+
+    strUrl=window.location.href;
+    arrUrl=strUrl.split("/");
+    strPage=arrUrl[arrUrl.length-1];
+    if(strPage==null||strPage.trim()=="")
+        strPage=arrUrl[arrUrl.length-2];
+
+
+    $(".table_show_detail thead input").keyup( function () {
+        /* Filter on the column (the index) of this element */
+        if ( this.className == "search_init" && this.id != "time_start1" && this.id != "time_end1" && this.id != "time_start2" && this.id != "time_end2")
+        {
+            var index=$(".table_show_detail thead input").index(this);
+            oTable.fnFilter( this.value, index );
+        }
+        if(this.className == "search_init")
+        {
+            var index=$(".table_show_detail thead input").index(this);
+            $.cookie(strPage+"_"+index, this.value);
+        }
+    } );
+
+    /*
+     * Support functions to provide a little bit of 'user friendlyness' to the textboxes in
+     * the footer
+     */
+    $(".table_show_detail thead input").each( function (i) {
+        if ( this.className == "search_init" )
+        {
+            asInitVals[i] = this.value;
+            var value=$.cookie(strPage+"_"+i);
+            if(value!=null&&value.trim()!="")
+                this.value=value;
+        }
+        if(this.className == "search_init" &&( this.id != "time_start1" || this.id != "time_end1" || this.id != "time_start2" || this.id != "time_end2"))
+        {
+            oTable.fnDraw();
+        }
+    } );
+
+    $(".table_show_detail thead input").focus( function () {
+        if ( this.className == "search_init" && this.value == asInitVals[$(".table_show_detail thead input").index(this)])
+        {
+            this.value = "";
+        }
+    } );
+
+    $(".table_show_detail thead input").blur( function (i) {
+        if ( this.className == "search_init" && this.value == "" )
+        {
+            this.value = asInitVals[$(".table_show_detail thead input").index(this)];
+        }
+    } );
+
+    /* Add event listeners to the two range filtering inputs */
+    $('#time_start1').keyup( function() { oTable.fnDraw(); } );
+    $('#time_end1').keyup( function() { oTable.fnDraw(); } );
+    $('#time_start2').keyup( function() { oTable.fnDraw(); } );
+    $('#time_end2').keyup( function() { oTable.fnDraw(); } );
+});
+
+
+
+$(document).ready(function () {
+    var oTable = $('.table_show').dataTable({
+        {#"bJQueryUI": true,#}
+        "sPaginationType": "full_numbers",
+        "bPaginate": false, //翻页功能
+        "bLengthChange": false, //改变每页显示数据数量
+        "bFilter": false, //过滤功能
+        "bSort": true, //排序功能
+        "bInfo": false,//页脚信息
+        "bAutoWidth": true,//自动宽度
+        "bStateSave": false, //缓存
+        "sScrollX": "100%",
+        "bScrollCollapse": true,
+        "aaSorting": [[ 1, "asc" ]],
+        "oLanguage": {
+            "sLengthMenu": "每页显示 _MENU_ 条记录",
+            "sZeroRecords": "抱歉， 没有找到",
+            "sInfo": "显示第 _START_ 至 _END_ 项记录/共 _TOTAL_ 项",
+            "sInfoEmpty": "没有数据",
+            "sInfoFiltered": "(从 _MAX_ 条数据中检索)",
+            "sSearch": "搜索所有内容：",
+            "aoColumnDefs": [
+                { 'bSearchable': false, 'aTargets': [ 'noFilter' ] },
+                { 'bSortable': false, 'aTargets': [ 'noSort' ] }
+            ],
+            "oPaginate": {
+                "sFirst": "首页",
+                "sPrevious": "前一页",
+                "sNext": "后一页",
+                "sLast": "尾页"
+            }
+        }
+    });
+});
+</script>

@@ -1,0 +1,125 @@
+{% extends "app/layout.html" %}
+{% load dictionary_extras %}
+{% block first %}
+{% include 'messages.html' %}
+{% include "frame.html" %}
+{% include "dataTables.html" %}
+
+<legend><h1>所有Bug</h1></legend>
+<form method="get" enctype="multipart/form-data">
+    <table class="table table-condensed row-fluid table_show_detail">
+        <thead>
+        <tr>
+            <th><input type="text" value="Bug名称" class="search_init"></th>
+            <th ><input type="text" id="time_start1" value="开始时间始" class="search_init"></th>
+            <th ><input type="text" id="time_start2" value="开始时间止" class="search_init"></th>
+            <th ><input type="text" id="time_end1" value="结束时间始" class="search_init"></th>
+            <th ><input type="text" id="time_end2" value="结束时间止" class="search_init"></th>
+            <th><input type="text" value="完成标志" class="search_init"></th>
+            <th><input type="text" value="所属任务" class="search_init"></th>
+            <th><input type="text" value="所属组" class="search_init"></th>
+            <th><input type="text" value="负责人" class="search_init"></th>
+            <th><input type="text" value="执行人" class="search_init"></th>
+            <th class="noSort"></th>
+        </tr>
+        <tr>
+            <th>Bug名称</th>
+            <th>开始时间</th>
+            <th>结束时间</th>
+            <th>状态</th>
+            <th>等级</th>
+            <th>完成标志</th>
+            <th>所属任务</th>
+            <th>所属组</th>
+            <th>负责人</th>
+            <th>执行人</th>
+            <th class="noFilter noSort" colspan=2>操作</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for bug in bugs %}
+            <tr>
+                <td>
+                    <a class="detail_button" url="/bug/details_bug/{{ bug.id }}/" href="#second">{{ bug.name }}</a>
+                </td>
+                <td>
+                    {{ bug.begin_date|date:"Y-m-d" }}
+                </td>
+                <td>
+                    {{ bug.end_date|date:"Y-m-d" }}
+                </td>
+                <td>
+                    {% ifequal bug.state 1 %}<span class="label label-important">待确认</span>{% endifequal %}
+                    {% ifequal bug.state 2 %}<span class="label label-info">进行中</span>{% endifequal %}
+                    {% ifequal bug.state 3 %}<span class="label label-warning">待审核</span>{% endifequal %}
+                    {% ifequal bug.state 4 %}<span class="label label-success">已结束</span>{% endifequal %}
+                </td>
+                <td>
+                    {% ifequal bug.importance 1 %}一般{% endifequal %}
+                    {% ifequal bug.importance 2 %}紧急{% endifequal %}
+                </td>
+                <td>
+                    {{ bug.finish|sub_str:13 }}
+                </td>
+                <td>
+                    {{ bug.task }}
+                </td>
+                <td>
+                    {% if bug.group.all|length > 3 %}
+                        {% for g in  bug.group.all|slice:":3" %}
+                            {{ g }};
+                        {% endfor %}
+                        ...
+                    {% else %}
+                        {% for g in  bug.group.all %}
+                            {{ g }};
+                        {% endfor %}
+                    {% endif %}
+                </td>
+                <td>
+                    {{ bug.principal }}
+                </td>
+                <td>
+                    {% if bug.executor.all|length > 3 %}
+                        {% for e in  bug.executor.all|slice:":3" %}
+                            {{ e }};
+                        {% endfor %}
+                        ...
+                    {% else %}
+                        {% for e in  bug.executor.all %}
+                            {{ e }};
+                        {% endfor %}
+                    {% endif %}
+                </td>
+                <td colspan=2>
+                    <a class="modalLink get_comments_bug btn  btn-small btn-primary " bug_id="{{ bug.id }}" href="#modal1_{{ bug }}">评论
+                    </a>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</form>
+<div class="overlay"></div>
+{% for bug in bugs %}
+    <div id="modal1_{{ bug }}" class="modal" style="display:none;margin: 0 auto;padding-left:15px;padding-top:10px;">
+         <div id="comment_{{ bug.id }}">
+        </div>
+        <form method="post"
+              action="/bug/add_comment/p1{{ bug.id }}p21p35/"   class="form_comment_bug" style="text-align: center">
+            {{ nf.as_p }}
+            <input type="submit" value="提交" class="btn btn-primary"/>&nbsp&nbsp&nbsp
+            <button class="closeBtn btn btn-primary ">返回</button>
+        </form>
+
+    </div>
+{% endfor %}
+
+<script>
+     $(document).ready(function () {
+        $('.nav li').removeClass('active');
+        $('.all_bug_select').parent().addClass('active');
+
+    });
+</script>
+{% endblock %}

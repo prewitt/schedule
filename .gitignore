@@ -1,0 +1,14 @@
+*.log
+*.pot
+*.pyc
+.idea/
+*.db
+software/
+myapp/app/migrations/
+myapp/staff/migrations/
+~*
+*.swp
+myapp/static/uploads/
+*~
+env/
+myapp/cache/

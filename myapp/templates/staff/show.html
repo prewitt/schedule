@@ -1,0 +1,101 @@
+{% include "messages.html" %}
+{% include "dataTables.html" %}
+{% include "frame.html" %}
+<legend><h1>人员管理</h1></legend>
+
+<form method="post" class="staff_submit_form" action="/staff/show/" id="form{{ staff.id }}" name="form{{ staff.id }}" enctype="multipart/form-data" >
+    <table class="table table-condensed table_show_detail" >
+        <thead>
+        <tr>
+            <th ><input type="text"  value="用户名" class="search_init"></th>
+            <th ><input type="text"  value="真实姓名" class="search_init"></th>
+            <th ><input type="text"  value="身份" class="search_init"></th>
+            <th ><input type="text"  value="所属组" class="search_init"></th>
+            <th ></th>
+            <th ></th>
+        </tr>
+        <tr>
+            <th class="span1">用户名</th>
+            <th class="span1">真实姓名</th>
+            <th class="span1">身份</th>
+            <th class="span2">所属的组</th>
+            <th class="span1 noFilter">是否可见</th>
+            <th class="span2 noFilter noSort">操作</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for staff in StaffList %}
+            <tr>
+                <td class="span2">
+                    {{ staff.user.username }}
+                </td>
+                <td class="span2">
+                    {{ staff.name }}
+                </td>
+                <td  class="span2">
+                    {{ staff.role }}
+                </td>
+                <td class="span3">
+                    {% for group in staff.group.all %}
+                        {{ group.name }};
+                    {% endfor %}
+                </td>
+                <td class="span1">
+                    <input  class="input-small" name="editVisible{{ staff.id }}" type="checkbox" value=""
+                            id="checkBox{{ staff.id }}" {% if staff.visible %} checked="checked" {% endif %}
+                            onclick="judgeLeader('{{ staff.id }}','{{ staff.name }}','{{ staff.visible }}')"
+                            {#                            {% if request.user.staff.role.level >= staff.role.level   %}disabled="disabled"{% endif %}#}
+                            />
+                </td>
+                <td class="span2">
+                    <button class="btn btn-primary staff_button"
+                            name="StaffSave" value="{{ staff.id }}" type="submit"
+                            {#                            {% if request.user.staff.role.level >= staff.role.level   %}disabled="disabled"{% endif %}#}
+                            >保存</button>
+                    <button class="btn btn-primary staff_button"
+                            name="StaffEdit" value="{{ staff.id }}" type="submit"
+                            {#                            {% if request.user.staff.role.level >= staff.role.level   %}disabled="disabled"{% endif %}#}
+                            >编辑</button>
+                    <button class="btn btn-primary staff_button"
+                            name="StaffDelete" value="{{ staff.id }}" type="submit"
+                            onclick="if(confirm('此操作会同时删除由该人创建或负责的通知、会议、项目、bug条目。确实要删除该人员吗？')){return true;}return false;"
+                            {#                            {% if request.user.staff.role.level >= staff.role.level   %}disabled="disabled"{% endif %}#}
+                            >删除</button>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</form>
+
+
+<script LANGUAGE="JavaScript">
+
+    function judgeLeader(id,name,visible)
+    {
+        var tag=0;
+        var groupName;
+        if(visible=='True')
+        {
+            {% for group in GroupList %}
+                {% if group.leader %}
+                    {
+                        if(id=={{ group.leader.id }} )
+                        {
+                            tag=1;
+                            groupName='{{ group.name }}'
+                        }
+                    }
+                {% endif %}
+            {% endfor %}
+            if(tag==1)
+            {
+                alert("此人为小组: "+groupName+" 的负责人,不能设置为不可见，请先更换负责人!");
+                document.getElementById("checkBox"+id).checked=true;
+            }
+        }
+    }
+</script>
+
+
+

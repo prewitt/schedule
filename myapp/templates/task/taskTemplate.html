@@ -1,0 +1,176 @@
+{% extends "app/layout.html" %}
+{% load dictionary_extras %}
+{% block first %}
+{% include "messages.html" %}
+<style type="text/css">
+    .modal {
+        display: none;
+        background: #eee;
+        padding: 0 20px 20px;
+        overflow: auto;
+        z-index: 1001;
+        position: absolute;
+        width: 540px;
+        min-height: 300px;
+        max-height: 500px;
+    }
+</style>
+<script>
+$.ajaxSetup({
+cache: false
+});
+     function clearFun(){
+        $('.table_show_detail').unbind();
+        $(".table_show_detail thead input").unbind();
+        $('#time_start1').unbind();
+        $('#time_end1').unbind();
+        $('#time_start2').unbind();
+        $('#time_end2').unbind();
+        $('.table_show').unbind();
+
+        $('.modalLink').unbind();
+        $("#m_radio_OK").unbind();
+        $("#m_checkbox_OK").unbind();
+        $("#m_checkbox_Close").unbind();
+
+
+        $("#finish").unbind();
+        $("#temp").unbind();
+        $("#reset").unbind();
+
+        $("#taskTree").unbind();
+        $('#detail').unbind();
+        $('#createTemp').unbind();
+        $('#search_q').unbind();
+        $("#taskTempsTree").unbind();
+        $('#delTemp').unbind();
+        $('#delete').unbind();
+    }
+   $(document).ready(function () {
+        {% load mptt_tags %}
+        {# {% full_tree_for_model app.Task as nodes %}#}
+        var sel_id;
+        var json =
+                [
+                    {% recursetree temps %}
+                        {
+                            attr: {"rel": "directory", id: "{{ node.id }}"},
+                            data: "任务名称：{{ node.name  }}，" +
+                                    "任务状态：{% ifequal node.state 1%}<span class='label label-important'>"+
+                                        "待确认</span>{% endifequal %}" +
+                                    "{% ifequal node.state 2 %}<span class='label label-info'>"+
+                                        "进行中</span>{% endifequal %}" +
+                                    "{% ifequal node.state 3 %}<span class='label label-warning'>"+
+                                        "待审核</span>{% endifequal %}" +
+                                    "{% ifequal node.state 4 %}<span class='label label-success'>"+
+                                        "已结束</span>{% endifequal %}，" +
+                                    "任务截止日期：{{ node.end_date|date:"Y-m-d" }}",
+                            {# "metadata": {"href": "{% url 'task' node.id %}"},#}
+                            children: [{{ children }}]
+                        },
+                    {% endrecursetree %}
+                ];
+        $("#taskTempsTree").off();
+        $("#taskTempsTree").jstree({
+            "json_data": {
+                "data": json
+            },
+            "themes": {
+                "theme": "apple",
+                "dots": true,
+                "icons": true
+            },
+            "core": {"html_titles": true},
+            "plugins": [ "themes", "json_data", "ui", "types", "search", "state", "wholerow"]
+        }).bind("select_node.jstree", function (e, data) {
+                    var tnode = data.inst._get_node(data.rslt.obj);
+                    sel_id = tnode.attr('id');
+                    {# alert(tnode.find('a').first().text());#}
+                    {# alert(tnode.attr('id'));#}
+                    {# var url = jQuery.data(data.rslt.obj[0], "href");#}
+                    {# if (url) {#}
+                    {# $.get(url, function (data) {#}
+                    {# $('#second').html(data);#}
+                    {#  });#}
+                    {#  }#}
+                });
+        $("#taskTempsTree").bind("loaded.jstree", function (event, data) {
+            $(this).jstree("open_all");
+        });
+        $("#taskTempsTree").bind("dblclick.jstree", function (event) {
+            var node = $(event.target).closest("li");
+            var data = node.data("jstree");
+            // Do some action
+            var id = node.attr('id');
+            var url = "/task/task_detail/" + id + "/"
+            if (id) {
+                $.get(url, function (data) {
+
+                    $('#second').empty().html(data);
+                });
+            }
+        });
+        $('#detail').click(function () {
+            var url = "/task/task_detail/" + sel_id + "/"
+            if (sel_id) {
+                $.get(url, function (data) {
+                    $('#second').empty().html(data);
+                });
+            }
+        });
+        $('#delTemp').click(function () {
+            var del_url = "/task/delTemp/" + sel_id + "/";
+            if (sel_id) {
+                $(this).attr("href", del_url);
+                if (confirm('您确定删除该模板吗？')) {
+                    return true;
+                }
+            }
+            $(this).attr("href", "#");
+            return false;
+        });
+
+        $(function () {
+            var to = false;
+            $('#search_q').keyup(function () {
+                if (to) {
+                    clearTimeout(to);
+                }
+                to = setTimeout(function () {
+                    var v = $('#search_q').val();
+                    $("#taskTempsTree").jstree("search", v)
+                }, 250);
+            });
+        });
+    });
+</script>
+
+<legend>
+    <h1>项目模板</h1>
+</legend>
+{#<form class="temp_submit_form" method="get" enctype="multipart/form-data">#}
+<div class="row" style="text-align:right;">
+    {#<button type="button" class="btn btn-warning btn-sm" onclick="demo_rename();"><i class="glyphicon glyphicon-pencil"></i> 修改名称</button>#}
+    {#<button type="button" class="btn btn-danger btn-sm" onclick="demo_delete();" ><i class="glyphicon glyphicon-remove"></i> 删除任务</button>#}
+    {#<button type="button" class="btn btn-success btn-sm modalLink" href='#modal_{{ node }}' onclick="demo_create();" >#}
+    <button type="button" class="btn btn-danger" id='detail'>
+        <i class="glyphicon glyphicon-asterisk"></i>详细信息
+    </button>
+    <a class="btn btn-success" id="delTemp" href="#">
+        <i class="glyphicon glyphicon-asterisk"></i>删除模板
+    </a>
+    <input type="text" value="" id="search_q"
+           style="box-shadow:inset 0 0 4px #eee; width:120px; margin:0; padding:6px 12px; border-radius:4px; border:1px solid silver; font-size:1.1em;"
+           placeholder="搜索"/>
+</div>
+{#</form>#}
+<div id="taskTempsTree"></div>
+
+        <script>
+     $(document).ready(function () {
+        $('.nav li').removeClass('active');
+        $('.taskTemplate_select').parent().addClass('active');
+
+    });
+    </script>
+{% endblock %}

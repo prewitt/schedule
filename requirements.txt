@@ -1,0 +1,10 @@
+Django==1.5.5
+South==0.8.2
+antiorm==1.1.1
+argparse==1.2.1
+db==0.0.15
+db-sqlite3==0.0.1
+django-filebrowser==3.5.2
+django-grappelli==2.4.8
+django-mptt==0.6.0
+wsgiref==0.1.2

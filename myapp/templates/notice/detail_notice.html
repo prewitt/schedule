@@ -1,0 +1,29 @@
+{% load dictionary_extras %}
+<br/>
+<br/>
+<br/>
+<h2 style="display: inline">通知详情</h2>
+<a class="btn clear_second_button" href="#first"><i class="icon-remove"></i></a>
+<dl class="dl-horizontal">
+    <dt>标题</dt>
+    <dd>{{ notice.title }}</dd>
+    <dt>时间</dt>
+    <dd>{{ notice.time|date:"Y-m-d" }}</dd>
+    <dt>创建人</dt>
+    <dd>
+            {% ifequal enCalendar True %}
+            <a class="get_others_calendar" url="/calendar/{{ notice.creator.id }}/"
+               href="#third">{{ notice.creator }}</a>
+        {% else %}
+            {% ifequal calendar|staff_in:notice.creator True %}
+                <a class="get_others_calendar" url="/calendar/{{ notice.creator.id }}/"
+                   href="#third">{{ notice.creator }}</a>
+            {% else %}
+                {{ notice.creator }}
+            {% endifequal %}
+        {% endifequal %}
+
+    </dd>
+    <dt>内容</dt>
+    <dd>{{ notice.content }}</dd>
+</dl>

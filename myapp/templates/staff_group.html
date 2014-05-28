@@ -1,0 +1,215 @@
+<!--使用方法说明-->
+{% comment %}
+从view中必须要传入group,表示从数据库中查询出来的所有group
+还有一个ngroup,表示所有未分组的成员
+获取staff有两种不同的类型：
+一、只选择一个staff，例子如下，注意：必须使用select标签
+<select id="select_id" class="modalLink" href="#modal1_staff_radio"
+        onclick="setRadio_id('select_id')">
+</select>
+二、选择多个staff，例子如下：注意：必须使用select标签,并且属性必须为multiple,不然结果会出错
+<select multiple id="select_id" class="modalLink" href="#modal1_staff_checkbox"
+        onclick="setCheckbox_id('select_id')">
+</select>
+{% endcomment %}
+<!--使用方法说明结束-->
+
+{% load static %}
+<script type="text/javascript" language="JavaScript">
+    var radio_id;
+    var checkbox_id;
+    function setRadio_id(id) {
+        radio_id = id;
+        var selVal = $('#' + radio_id).val();
+        $('input[name="m_radio_staff"][value=' + selVal + ']').attr("checked", true);
+    }
+    function setCheckbox_id(id) {
+        checkbox_id = id;
+
+        var opts = $('#' + checkbox_id)[0].options;
+        var len = opts.length;
+        for (var i = 0; i < len; ++i) {
+            opts[i].selected = true;
+        }
+
+        var multiSel = $('#' + checkbox_id).find("option:selected");
+        multiSel.each(function () {
+            $('input[name="m_checkbox_staff"][value=' + $(this).val() + ']').attr("checked", true);
+        });
+    }
+
+    $(document).on('click', "#m_radio_OK", function () {
+        var staff_id = $('input[name="m_radio_staff"]:checked').val();
+        var staff_name = $('#m_staff_' + staff_id).val();
+        $('#' + radio_id).empty();
+        $('#' + radio_id).append("<option selected='true' value='" + staff_id + "'>" + staff_name + "</option>")
+        $("#m_radio_Close").trigger("click");
+    });
+
+    $(document).on('click', "#m_checkbox_OK", function () {
+        var check = $('input[name="m_checkbox_staff"]:checked');
+        $('#' + checkbox_id).empty();
+        var data = new Array();
+        var staff_id = -1, txt = "", flg = false, d_len = 0;
+
+        check.each(function () {
+            staff_id = $(this).val();
+            flg = false;
+            d_len = data.length;
+
+            for (var i = 0; i < d_len; ++i) {
+                if (data[i] == staff_id) {
+                    flg = true;
+                    break;
+                }
+            }
+            if (!flg) {
+                data[d_len++] = staff_id;
+                txt = $('#m_staff_n' + staff_id).val();
+                $('#' + checkbox_id).append("<option selected='true' value='" + staff_id + "'>" + txt + "</option>");
+            }
+        });
+
+        $(".closeBtn").trigger("click");
+    });
+    $(document).on('click', "#m_checkbox_Close", function () {
+        var opts = $('#' + checkbox_id)[0].options;
+        var len = opts.length;
+        for (var i = 0; i < len; ++i) {
+            opts[i].selected = true;
+        }
+        $(".closeBtn").trigger("click");
+    });
+</script>
+<div id="modal1_staff_radio" class="modal" style="display:none;margin: 0 auto;padding-left:15px;padding-top:10px;">
+    <table>
+        {% for g in group %}
+            <tr>
+                <td nowrap align="right">
+                    <strong>{{ g }}:</strong>
+                </td>
+                <td>
+                    {% for s in g.member.all %}
+                        {% ifequal s.visible True %}
+                            <span style="display:inline-block;">
+                            &nbsp;
+                            <input type="radio" name="m_radio_staff" value="{{ s.id }}"/>{{ s }}
+                            <input type="text" id="m_staff_{{ s.id }}" value="{{ s }}" style="display: none"/>
+                            </span>
+                        {% endifequal %}
+                    {% endfor %}
+                </td>
+            </tr>
+            <tr>
+                <td><br></td>
+                <td><br></td>
+            </tr>
+        {% endfor %}
+
+        <tr>
+            <td nowrap align="right">
+                <strong>未分组人员:</strong>
+            </td>
+            <td>
+                {% for ng in ngroup %}
+                    {% ifequal ng.visible True %}
+                        {# {% ifequal ng.group None %}#}
+                        <span style="display:inline-block;">
+                        &nbsp;
+                        <input type="radio" name="m_radio_staff" value="{{ ng.id }}"/>{{ ng }}
+                        <input type="text" id="m_staff_{{ ng.id }}" value="{{ ng }}" style="display: none"/>
+                        {# {% endifequal %}#}
+                        </span>
+                    {% endifequal %}
+                {% endfor %}
+            </td>
+        </tr>
+
+    </table>
+    <br>
+
+    <div style="text-align: center;" style=" border-bottom: 20px">
+        <button class="btn btn-primary task_button" id="m_radio_OK">确定</button>
+        &nbsp&nbsp&nbsp
+        <button class="closeBtn btn btn-primary task_button" id="m_radio_Close">返回</button>
+    </div>
+</div>
+
+<div id="modal1_staff_checkbox" class="modal" style="display:none;margin: 0 auto;padding-left:15px;padding-top:10px;">
+    <table>
+        {% for g in group %}
+            <tr>
+                <td>
+                    全选：<input type="checkbox" id="m_all_{{ g.id }}"/>
+                </td>
+                <td nowrap align="right">
+                    <strong>{{ g }}:</strong>
+                </td>
+                <td>
+                    {% for s in g.member.all %}
+                        {% ifequal s.visible True %}
+                            <span style="display:inline-block;">
+                            &nbsp;
+                            <input type="checkbox" id="checkbox_{{ g.id }}_{{ s.id }}" name="m_checkbox_staff"
+                                   value="{{ s.id }}"/>{{ s }}
+                            <input type="text" id="m_staff_n{{ s.id }}" value="{{ s }}" style="display: none"/>
+                            </span>
+                        {% endifequal %}
+                    {% endfor %}
+                </td>
+            </tr>
+            <tr>
+                <td><br></td>
+                <td><br></td>
+            </tr>
+        {% endfor %}
+
+        <tr>
+            <td nowrap align="right">
+                全选：<input type="checkbox" name="m_all"/>
+            </td>
+            <td>
+                <strong>未分组人员:</strong>
+            </td>
+            <td>
+                {% for ng in ngroup %}
+                    {% ifequal ng.visible True %}
+                        {#  {% ifequal ng.group None %}#}
+                        <span style="display:inline-block;">
+                        &nbsp;
+                        <input type="checkbox" name="m_checkbox_staff" value="{{ ng.id }}"/>{{ ng }}
+                        <input type="text" id="m_staff_n{{ ng.id }}" value="{{ ng }}" style="display: none"/>
+                        {# {% endifequal %}#}
+                        </span>
+                    {% endifequal %}
+                {% endfor %}
+            </td>
+        </tr>
+
+    </table>
+    <br>
+
+    <div style="text-align: center;" style="  border-bottom: 20px">
+        <button class="btn btn-primary task_button" id="m_checkbox_OK">确定</button>
+        &nbsp&nbsp&nbsp
+        <button class="btn btn-primary task_button" id="m_checkbox_Close">返回</button>
+    </div>
+</div>
+<script type="text/javascript">
+    $(document).ready(function () {
+        {% for g in group %}
+            $("#m_all_{{ g.id }}").on('click', function () {
+                if ($("#m_all_{{ g.id }}:checked").val() != undefined) {
+                    {% for s in g.member.all %}
+                        $("#checkbox_{{ g.id }}_{{ s.id }}").prop("checked", true);
+                    {% endfor %}
+                }
+                else if ($("#m_all_{{ g.id }}:checked").val() == undefined) {
+                    {% for s in g.member.all %}
+                        $("#checkbox_{{ g.id }}_{{ s.id }}").prop("checked", false);
+                    {% endfor %}
+                }
+            });
+        {% endfor %}
+    });
+</script>

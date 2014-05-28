@@ -1,0 +1,334 @@
+{% extends "app/layout.html" %}
+{% load dictionary_extras %}
+{% block first %}
+    {% include "staff_group.html" %}
+    {% include "frame.html" %}
+    {% include "messages.html" %}
+    <style type="text/css">
+        .modal {
+            display: none;
+            background: #eee;
+            padding: 0 20px 20px;
+            overflow: auto;
+            z-index: 1001;
+            position: absolute;
+            width: 540px;
+            min-height: 300px;
+            max-height: 500px;
+        }
+    </style>
+    <script>
+
+    function clearFun() {
+        $('.table_show_detail').unbind();
+        $(".table_show_detail thead input").unbind();
+        $('#time_start1').unbind();
+        $('#time_end1').unbind();
+        $('#time_start2').unbind();
+        $('#time_end2').unbind();
+        $('.table_show').unbind();
+
+        $('.modalLink').unbind();
+        $("#m_radio_OK").unbind();
+        $("#m_checkbox_OK").unbind();
+        $("#m_checkbox_Close").unbind();
+
+
+        $("#finish").unbind();
+        $("#temp").unbind();
+        $("#reset").unbind();
+
+        $("#taskTree").unbind();
+        $('#detail').unbind();
+        $('#createTemp').unbind();
+        $('#search_q').unbind();
+        $("#taskTempsTree").unbind();
+        $('#delTemp').unbind();
+        $('#delete').unbind();
+    }
+    var sel_id
+    $(document).ready(function () {
+        {% load mptt_tags %}
+        var json =
+                [
+                    {% recursetree tasks %}
+                        {
+                            {% ifequal map_task|dict_access:node.id 1 %}
+                                attr: {"rel": "directory", id: "{{ node.id }}", style: "display:none"},
+                                data: "任务名称：{{ node.name  }}，" +
+                                        "任务状态：{% ifequal node.state 1%}<span class='label label-important'>"+
+                                            "待确认</span>{% endifequal %}" +
+                                        "{% ifequal node.state 2 %}<span class='label label-info'>"+
+                                            "进行中</span>{% endifequal %}" +
+                                        "{% ifequal node.state 3 %}<span class='label label-warning'>"+
+                                            "待审核</span>{% endifequal %}" +
+                                        "{% ifequal node.state 4 %}<span class='label label-success'>"+
+                                            "已结束</span>{% endifequal %}，" +
+                                        "任务截止日期：{{ node.end_date|date:"Y-m-d" }}" +
+                                        "<div id='task_node_{{ node.id }}'></div>",
+                                "metadata": {"href": "/task/task_detail/" + {{ node.id }} +"/"},
+                                {#   {% else %}#}
+                                {#  data: "您没有权限查看该任务",#}
+                            {% endifequal %}
+                            children: [{{ children }}]
+                        },
+                    {% endrecursetree %}
+                ]
+        $("#taskTree").off();
+        $("#taskTree").jstree({
+            "json_data": {
+                "data": json
+            },
+            "themes": {
+                "theme": "apple",
+                "dots": true,
+                "icons": true
+            },
+            "core": {
+                "html_titles": true
+            },
+            "plugins": [ "themes", "json_data", "ui", "types", "search", "state", "wholerow"]
+        }).bind("select_node.jstree", function (e, data) {
+            var tnode = data.inst._get_node(data.rslt.obj);
+            sel_id = tnode.attr('id');
+            {# alert(tnode.find('a').first().text());#}
+            {# alert(tnode.attr('id'));#}
+            {# var url = jQuery.data(data.rslt.obj[0], "href");#}
+            {# if (url) {#}
+            {# $.get(url, function (data) {#}
+            {# $('#second').html(data);#}
+            {#  });#}
+            {#  }#}
+            {#                $(data.rslt.obj).find('li').each(function (i) {#}
+            {#                    if (data.inst.get_path($(this)).length <= 2) {#}
+            {#                        data.inst.open_node($(this));#}
+            {#                    }#}
+            {#                });#}
+
+        });
+
+        $("#taskTree").bind('loaded.jstree', function (e, data) {
+            /**
+             * Open nodes on load (until x'th level)
+             */
+
+                    {#                            var depth = 2;#}
+                    {#                            var ii = 0;#}
+                    {#            #}
+                    {#                            data.inst.get_container().find('li').each(function (i) {#}
+                    {#                                if (tree_count < 10) {#}
+                    {#                                    if (data.inst.get_path($(this)).length <= depth) {#}
+                    {#                                        data.inst.open_node($(this));#}
+                    {#                                    }#}
+                    {#                                    ++tree_count;#}
+                    {#                                }#}
+                    {#                            });#}
+
+            var ii = 0;
+            {% recursetree tasks %}
+                {% ifequal map_task|dict_access:node.id 1 %}
+                    if (ii < 10) {
+                        {#                        $("#" +{{ node.id }}).show();#}
+                        $("#" +{{ node.id }}).css("display", "block");
+                        {{ children }}
+                        {% if node.is_root_node %}
+                            ++ii;
+                        {% endif %}
+                    }
+                {% endifequal %}
+            {% endrecursetree %}
+        });
+
+        $("#taskTree").bind("dblclick.jstree", function (event) {
+            var node = $(event.target).closest("li");
+            var data = node.data("jstree");
+            // Do some action
+            var id = node.attr('id');
+            var url = "/task/task_detail/" + id + "/"
+            if (id) {
+                $.get(url, function (data) {
+                    // $('#second').empty().html(data);
+                    $('#task_node_' + id).empty().html(data);
+                });
+            }
+        });
+        $('#detail').click(function () {
+            var url = "/task/task_detail/" + sel_id + "/";
+            if (sel_id) {
+                $.get(url, function (data) {
+                    //$('#second').empty().html(data);
+                    $('#task_node_' + sel_id).empty().html(data);
+                });
+            }
+        });
+        $('#createTemp').click(function () {
+            if (sel_id) {
+                $('#temp_' + sel_id).trigger('click');
+            }
+        });
+        $('#delete').click(function () {
+            var url = "/task/deleteTree/" + sel_id + "/";
+            if (sel_id) {
+                $(this).attr("href", url);
+                if (confirm('如果删除该任务，其子任务也将被删除，确定要删除吗？')) {
+                    return true;
+                }
+            }
+            $(this).attr("href", "#");
+            return false;
+        });
+        $(function () {
+            var to = false;
+            $('#search_q').keyup(function () {
+                if (to) {
+                    clearTimeout(to);
+                }
+                to = setTimeout(function () {
+                    var v = $('#search_q').val();
+                    $("#taskTree").jstree("search", v)
+                }, 250);
+            });
+        });
+
+        $("#tree_count").on("change", function () {
+
+            var counts = $("#tree_count").val();
+            if (!isNumber(counts)) {
+                alert("请输入数字！");
+                return;
+            }
+            var ii = 0;
+            $("#taskTree").jstree("refresh");
+
+            {% recursetree tasks %}
+                {% ifequal map_task|dict_access:node.id 1 %}
+                    if (ii < counts) {
+                        {# $("#" +{{ node.id }}).show();#}
+                        $("#" +{{ node.id }}).css("display", "block");
+                        {{ children }}
+                        {% if node.is_root_node %}
+                            ++ii;
+                        {% endif %}
+                    }
+                {% endifequal %}
+            {% endrecursetree %}
+        });
+    });
+    function isNumber(num) {
+        var reNum = /^\d*$/;
+        return(reNum.test(num));
+    }
+    </script>
+    <legend>
+        <h1>所有项目</h1>
+    </legend>
+    <div class="row" style="text-align:right;">
+        {#<button type="button" class="btn btn-warning btn-sm" onclick="demo_rename();"><i class="glyphicon glyphicon-pencil"></i> 修改名称</button>#}
+        {#<button type="button" class="btn btn-danger btn-sm" onclick="demo_delete();" ><i class="glyphicon glyphicon-remove"></i> 删除任务</button>#}
+        {#<button type="button" class="btn btn-success btn-sm modalLink" href='#modal_{{ node }}' onclick="demo_create();" >#}
+        显示任务树：
+        <input id="tree_count"
+               style="box-shadow:inset 0 0 4px #eee; width:80px; margin:0; padding:6px 12px; border-radius:4px; border:1px solid silver; font-size:1.1em;"
+               value="10"/>
+        &nbsp;
+        <button type="button" class="btn btn-danger" id='detail'>
+            <i class="glyphicon glyphicon-asterisk"></i>详细信息
+        </button>
+        {% ifequal edit_task True %}
+            <button type="button" class="btn btn-warning" id="createTemp">
+                <i class="glyphicon glyphicon-asterisk"></i>生成模板
+            </button>
+        {% endifequal %}
+        <a class="btn btn-success" id='delete' href="#">
+            <i class="glyphicon glyphicon-asterisk"></i>删除任务
+        </a>
+        <input type="text" value="" id="search_q"
+               style="box-shadow:inset 0 0 4px #eee; width:120px; margin:0; padding:6px 12px; border-radius:4px; border:1px solid silver; font-size:1.1em;"
+               placeholder="搜索"/>
+    </div>
+    <div id="taskTree"></div>
+
+    {% recursetree tasks %}
+        {% if node.is_root_node %}
+            <a class='modalLink ' href='#modal_{{ node }}' style="display: none" id="temp_{{ node.id }}"></a>
+            <div id="modal_{{ node }}" class="modal"
+                 style="display:none;margin: 0 auto;padding-left:15px;padding-top:10px;">
+                <legend><h1>创建项目模板</h1></legend>
+                <form method="post" class="form-horizontal" enctype="multipart/form-data"
+                      action="/task/create_taskTemp/{{ node.id }}/" style="width:auto;">
+                    <fieldset>
+                        <div class="control-group">
+                            <label class="control-label" for="id_name">层数:</label>
+
+                            <div class="controls">
+                                <input id="layer" name="layer" type="text" placeholder="所有层"
+                                       onkeyup="this.value=this.value.replace(/\D/g,'')"
+                                       onafterpaste="this.value=this.value.replace(/\D/g,'')"/>(只能输入数字)
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="id_name">名称:</label>
+
+                            <div class="controls">
+                                <input id="id_name" name="name" type="text" value="{{ node.name }}"/>
+                            </div>
+                        </div>
+
+                        <div class="control-group">
+                            <label class="control-label" for="id_begin_date">开始日期:</label>
+
+                            <div class="controls">
+                                <input id="id_begin_date" name="begin_date" type="text"
+                                       value="{{ node.begin_date|date:"Y-m-d" }}">(格式: YYYY-MM-DD)
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="id_end_date">结束日期:</label>
+
+                            <div class="controls">
+                                <input id="id_end_date" name="end_date" type="text"
+                                       value="{{ node.end_date|date:"Y-m-d" }}">(格式: YYYY-MM-DD)
+                            </div>
+                        </div>
+
+                        <div class="control-group">
+                            <label class="control-label">等级:</label>
+
+                            <div class="controls">
+                                <select name="importance" id="id_importance">
+                                    <option value="1" {% ifequal node.importance '1' %}selected="true" {% endifequal %}>
+                                        一般
+                                    </option>
+                                    <option value="2" {% ifequal node.importance '2' %}selected="true" {% endifequal %}>
+                                        紧急
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="control-group">
+                            <label class="control-label">内容:</label>
+
+                            <div class="controls">
+                                <textarea name="content" id="content">{{ node.content }}</textarea>
+                            </div>
+                        </div>
+
+                        <div class="control-group" style="text-align:left">
+                            <div class="controls">
+                                <button type="submit" class="btn btn-primary">提交</button>
+                                &nbsp;&nbsp;&nbsp;&nbsp;
+                                <button type="button" class="btn btn-primary closeBtn">返回</button>
+                            </div>
+                        </div>
+                    </fieldset>
+                </form>
+            </div>
+        {% endif %}
+    {% endrecursetree %}
+    <script>
+        $(document).ready(function () {
+            $('.nav li').removeClass('active');
+            $('.show_task_select').parent().addClass('active');
+        });
+    </script>{% endblock %}H

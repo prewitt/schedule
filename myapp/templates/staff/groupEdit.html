@@ -1,0 +1,60 @@
+{% include 'messages.html' %}
+{% include "frame.html" %}
+<legend><h1>编辑小组</h1></legend>
+<form method="post" action="/staff/group/" class="form-horizontal staff_submit_form" >
+
+    <div class="control-group">
+        <label class="control-label">小组名称:<span style="color: red">&lowast;</span></label>
+        <div class="controls">
+            <input name="GroupName" type="text" value="{{ Group.name }}">
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label">小组成员:</label>
+        <div class="controls">
+            <select name="GroupMember" id="GroupMember" multiple="multiple">
+                {% for staff in StaffList %}
+                    <option value="{{ staff.id }}"  {% for item in Group.member.all %} {% ifequal item.name staff.name%} selected="selected"{% endifequal %}{% endfor %}onclick="selectLeader()">{{ staff.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label">负责人:</label>
+        <div class="controls">
+            <select name="GroupLeader" id="GroupLeader">
+                {% for staff in Group.member.all %}
+                    {% ifequal staff.visible True %} <option value="{{ staff.id }}"   {% ifequal staff.name Group.leader.name%} selected="selected"{% endifequal %}>{{ staff.name }}</option>{% endifequal %}
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    <div class="control-group">
+        <label class="control-label">小组描述:</label>
+        <div class="controls">
+            <textarea name="GroupRemark">{{ Group.content }}</textarea>
+        </div>
+    </div>
+    <div class="control-group">
+        <div class="controls">
+            <button class="btn btn-primary staff_button toTop" name="editGroupSave" value="{{ Group.id }}" type="submit">保存</button>
+            <button class="btn btn-primary back_button" name="back_group" type="button"  iid="show_group">返回</button>
+        </div>
+    </div>
+</form>
+
+<script LANGUAGE="JavaScript">
+    function selectLeader()
+    {
+        o = document.getElementById("GroupMember");
+        oo = document.getElementById("GroupLeader");
+        oo.options.length=0;
+        for(i=0;i<o.length;i++){
+            if(o.options[i].selected){
+                if(o.options[i].text=='{{ Group.leader.name }}')
+                    oo.options.add(new Option(o.options[i].text,o.options[i].value,true,true));
+                else oo.options.add(new Option(o.options[i].text,o.options[i].value,false,false));
+            }
+        }
+    }
+</script>

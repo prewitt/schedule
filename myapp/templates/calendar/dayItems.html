@@ -1,0 +1,35 @@
+<div class="span5 myDayItems">
+    {% include "messages.html" %}
+{#    <h2 style="text-align: center;">日程安排<em>{{year}}-{{month}}-{{day}}</em></h2>#}
+    <form class="form-horizontal submit_dayitems_form" url="/calendar/{{ year }}/{{ month }}/0/" method="post" action="{{ nowUrl }}">
+        <table>
+        <tr class="control-group">
+            <td><h2>安排{{year}}-{{month}}-{{day}}</h2></td>
+        </tr>
+        <tr class="control-group">
+            <td class="control-label" for="">一天概括&nbsp;&nbsp;</td>
+            <td class="controls">
+                <textarea rows="1" {% if not me %}readonly="true" {% endif %} name="summary">{{ DaySummary }}</textarea>
+            </td>
+        </tr>
+        {{ DayItems }}
+        </table>
+        {% if me %}
+            <div class="control-group">
+                <div class="controls">
+                    <button class="btn btn-primary dayitems_button" name="saveTable" type="submit">保存</button>
+                    <button class="btn btn-primary back_calendar_button" type="button" url="/calendar/{{ year }}/{{ month }}/0/"  iid="manage_calendar">关闭</button>
+                </div>
+            </div>
+        {% else %}
+            <div class="control-group">
+            <div class="controls">
+                <button class="btn btn-primary clear_fourth_button"  type="button">
+                关闭
+                </button>
+            </div>
+
+            </div>
+        {% endif %}
+    </form>
+</div>

@@ -1,0 +1,150 @@
+{% extends "app/layout.html" %}
+{% load dictionary_extras %}
+{% block first %}
+{% include "messages.html" %}
+{% include "staff_group.html" %}
+{% include "frame.html" %}
+
+<form method="post" action="/bug/add_bug/" class="form-horizontal">
+    <fieldset>
+        <legend><h1>创建Bug</h1></legend>
+        <div class="control-group">
+            <label class="control-label" for="id_name">名称:<span style="color: red">&lowast;</span></label>
+
+            <div class="controls">
+                <input id="id_name" name="name" type="text" value="{{ name }}"/>
+            </div>
+        </div>
+
+
+        <div class="control-group">
+            <label class="control-label" for="id_begin_date">开始日期:<span style="color: red">&lowast;</span></label>
+
+            <div class="controls">
+                <input id="id_begin_date" name="begin_date" type="text" value="{{ begin_date }}">(格式: YYYY-MM-DD)
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="id_end_date">结束日期:<span style="color: red">&lowast;</span></label>
+
+            <div class="controls">
+                <input id="id_end_date" name="end_date" type="text" value="{{ end_date }}">(格式: YYYY-MM-DD)
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label class="control-label">状态:</label>
+
+            <div class="controls">
+                <select name="state" id="imstate">
+                    <option value="1" {% ifequal state '1' %}selected="true" {% endifequal %}>待确认</option>
+                    <option value="2" {% ifequal state '2' %}selected="true" {% endifequal %}>进行中</option>
+                    <option value="3" {% ifequal state '3' %}selected="true" {% endifequal %}>待审核</option>
+                    <option value="4" {% ifequal state '4' %}selected="true" {% endifequal %}>已结束</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label class="control-label">等级:</label>
+
+            <div class="controls">
+                <select name="importance" id="id_importance">
+                    <option value="1" {% ifequal importance '1' %}selected="true" {% endifequal %}>一般</option>
+                    <option value="2" {% ifequal importance '2' %}selected="true" {% endifequal %}>紧急</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label class="control-label">内容:<span style="color: red">&lowast;</span></label>
+
+            <div class="controls">
+                <textarea name="content" id="content">{{ content }}</textarea>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label class="control-label">完成标志:</label>
+
+            <div class="controls">
+                <textarea name="finish" id="finish" >{{ finish }}</textarea>(还可以输入<span id="last_ch">1000</span>个字符)
+            </div>
+
+        </div>
+
+        <div class="control-group">
+            <label class="control-label">所属任务:<span style="color: red">&lowast;</span></label>
+
+            <div class="controls">
+                <select name="task" id="task">
+                    {% for t in tasks %}
+                        <option value="{{ t.id }}" {% ifequal t b_task %}selected{% endifequal %}>{{ t }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label class="control-label">所属组:</label>
+
+            <div class="controls">
+                <select name="group" id="group" multiple="multiple">
+                    {% for g in group %}
+                        <option value="{{ g.id }}"
+                                {% for tg in b_group %}
+                                {% ifequal tg g %}selected="true"{% endifequal %}
+                                {% endfor %}>
+                            {{ g }}
+                        </option>
+                    {% endfor %}
+                </select>按住Ctrl多选
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label">负责人:<span style="color: red">&lowast;</span></label>
+
+            <div class="controls">
+                <select name="principal" id="principal" class="modalLink" href="#modal1_staff_radio"
+                        onclick="setRadio_id('principal')">
+                    <option value="{{ bug.principal.id }}">{{ b_principal }}</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label class="control-label">执行人:</label>
+
+            <div class="controls">
+                <select name="executor" multiple id="executor" class="modalLink" href="#modal1_staff_checkbox"
+                        onclick="setCheckbox_id('executor')">
+                    {% for e in b_executor %}
+                        <option value="{{ e.id }}" selected>{{ e }}</option>
+                    {% endfor %}
+                </select>点击空白处进行选择
+            </div>
+        </div>
+        <div class="control-group">
+            <div class="controls">
+                <button type="submit" class="btn btn-primary toTop">添加</button>
+                <button type="reset" class="btn btn-primary toTop">清空</button>
+            </div>
+        </div>
+    </fieldset>
+</form>
+<script type="text/javascript" language="JavaScript">
+    $(document).ready(function () {
+        $(document).on('input', '#finish', function () {
+            var val = $('#finish').val();
+            var len = val.length
+            if (len > 1000)
+                alert("完成标志的长度不能超过1000个字符,超过的部分在提交时会被截断!");
+            $('#last_ch').text(1000 - len);
+        });
+        $('.nav li').removeClass('active');
+        $('.add_bug_select').parent().addClass('active');
+
+    });
+
+</script>
+{% endblock %}

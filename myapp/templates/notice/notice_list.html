@@ -1,0 +1,53 @@
+{% extends 'app/layout.html' %}
+{% load dictionary_extras %}
+{% block first %}
+{% include "messages.html" %}
+{% include "dataTables.html" %}
+{% include "frame.html" %}
+<legend><h1>所有通知</h1></legend>
+    <table class="table table-hover row-fluid table_show_detail" >
+        <thead>
+        <tr>
+            <th class="span2"><input type="text"  value="标题" class="search_init"></th>
+            <th class="span2"><input type="text"  value="时间" class="search_init"></th>
+            <th class="span2"><input type="text"  value="创建人" class="search_init"></th>
+            <th class="span4"><input type="text"  value="内容" class="search_init"></th>
+            <th class="span2"></th>
+        </tr>
+        <tr>
+            <th class="span2">标题</th>
+            <th class="span2">时间</th>
+            <th class="span2">创建人</th>
+            <th class="span4">内容</th>
+            <th class="span2 noFilter">操作</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for notice in notice_list %}
+            <tr>
+                <td><a class="detail_button" url="/notice/detail_notice/{{ notice.id }}/" href="#">{{ notice.title }}</a></td>
+                <td>{{ notice.time|date:"Y-m-d" }}</td>
+                <td>{{ notice.creator }}</td>
+                <td>{{ notice.content|slice:"30"}}{% if notice.content|length > 30 %}...{% endif %}</td>
+                <td>
+                    {% if  staff.role.editMeeting or notice.creator.id == staff.id %}
+                        <a
+                                href="/notice/delete_notice/{{ notice.id }}/"
+                                class="btn btn-primary "
+                                onclick="if(confirm('删除后不可恢复，确定删除吗？')){return true;}return false;"
+                                >删除
+                        </a>
+                    {% endif %}
+
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+        <script>
+     $(document).ready(function () {
+        $('.nav li').removeClass('active');
+        $('.get_notice_select').parent().addClass('active');
+
+    });
+    </script>{% endblock %}

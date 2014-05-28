@@ -1,0 +1,8 @@
+
+         {% for c in comments %}
+            {% ifequal c.type 2 %}
+                    {{ c.author }}&nbsp说：
+                    {{ c.content }}<br>
+            {% endifequal %}
+        {% endfor %}
+

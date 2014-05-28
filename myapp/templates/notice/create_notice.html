@@ -1,0 +1,42 @@
+{% extends 'app/layout.html' %}
+{% block first %}
+{% include "messages.html" %}
+{% include "frame.html" %}
+<legend><h1>发布通知</h1></legend>
+<form method="post" class="form-horizontal" action="/notice/create_notice/">
+    <div class="control-group">
+        <label class="control-label" for="id_title">标题:<span style="color: red">&lowast;</span></label>
+        <div class="controls">
+            <input id="id_title" name="title" type="text" value="{{ title }}" />
+        </div>
+    </div>
+
+    <div class="control-group">
+        <label  class="control-label" for="id_time">时间:<span style="color: red">&lowast;</span></label>
+        <div class="controls">
+            <input id="id_time" name="time" type="text" value="{{ time }}">(格式: YYYY-MM-DD)
+        </div>
+    </div>
+
+    <div class="control-group">
+        <label class="control-label" for="id_content">内容:<span style="color: red">&lowast;</span></label>
+        <div class="controls">
+            <textarea cols="40" id="id_content" name="content"  rows="10">{{ content }}</textarea>
+        </div>
+    </div>
+
+    <div class="control-group">
+        <div class="controls">
+            <button type="submit" class="btn btn-primary toTop">发布</button>
+            <button class="btn btn-primary back_button toTop" iid="create_notice">清空</button>
+        </div>
+    </div>
+</form>
+        <script>
+     $(document).ready(function () {
+        $('.nav li').removeClass('active');
+        $('.create_notice_select').parent().addClass('active');
+
+    });
+    </script>
+{% endblock %}

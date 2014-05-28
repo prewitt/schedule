@@ -1,0 +1,196 @@
+{% extends "app/layout_for_edit.html" %}
+{% load dictionary_extras %}
+{% block first %}
+{% include 'messages.html' %}
+{% include "staff_group.html" %}
+{% include "frame.html" %}
+{% load mptt_tags %}
+<form method="post" action="/task/modify/{{ task.id }}/" class=" form-horizontal">
+    <fieldset>
+        <legend><h1>编辑项目</h1></legend>
+        <div class="control-group">
+            <label class="control-label">名称:</label>
+
+            <div class="controls">
+                <input name="name" type="text" value="{{ task.name }}">
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="id_begin_date">开始日期:<span style="color: red">&lowast;</span></label>
+
+            <div class="controls">
+                <input id="id_begin_date" name="begin_date" type="text" value="{{ task.begin_date|date:"Y-m-d" }}">(格式:
+                YYYY-MM-DD)
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="id_end_date">结束日期:<span style="color: red">&lowast;</span></label>
+
+            <div class="controls">
+                <input id="id_end_date" name="end_date" type="text" value="{{ task.end_date|date:"Y-m-d" }}">(格式:
+                YYYY-MM-DD)
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label">状态:</label>
+
+            <div class="controls">
+                <select name="state">
+                    <option value="1" {% ifequal task.state 1 %}selected="true" {% endifequal %}>待确认</option>
+                    <option value="2" {% ifequal task.state 2 %}selected="true" {% endifequal %}>进行中</option>
+                    <option value="3" {% ifequal task.state 3 %}selected="true" {% endifequal %}>待审核</option>
+                    <option value="4" {% ifequal task.state 4 %}selected="true" {% endifequal %}>已结束</option>
+                </select>
+            </div>
+
+        </div>
+        <div class="control-group">
+            <label class="control-label">等级:</label>
+
+            <div class="controls">
+                <select name="importance">
+                    <option value="1" {% ifequal task.importance 1 %}selected="true" {% endifequal %}>一般</option>
+                    <option value="2" {% ifequal task.importance 2 %}selected="true" {% endifequal %}>紧急</option>
+                </select>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label">内容:<span style="color: red">&lowast;</span></label>
+
+            <div class="controls">
+                <textarea name="content" id="content">{{ task.content }}</textarea>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label">完成标志:</label>
+
+            <div class="controls">
+                <textarea name="finish" id="finish">{{ task.finish }}</textarea>(还可以输入<span id="last_ch">1000</span>个字符)
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label">父任务:</label>
+
+            <div class="controls">
+
+                <select name="parent" id="parent">
+                    {% ifequal edit_task True %}
+                        <option {% ifequal task.parent None %}selected="true" {% endifequal %} value="None"></option>
+                    {% endifequal %}
+                    {% for node,structure in parent|tree_info %}
+                        <option value="{{ node.id }}" {% ifequal task.parent node %}selected="true" {% endifequal %}>
+                            {% if not node.is_root_node %}
+                                {% for i in node.get_level|n_range %}
+                                    &nbsp;&nbsp;
+                                {% endfor %}
+                            {% endif %}
+                            {{ node }}
+                        </option>
+                    {% endfor %}
+                </select>
+
+{#                <input name="parent" id="parent" value="{{ task.parent }}" readonly/>#}
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label">所属的组:</label>
+
+            <div class="controls">
+                <select name="group" id="group" multiple="multiple">
+                    {% for g in group %}
+                        <option value="{{ g.id }}" {% for tg in task.group.all %}
+                                {% ifequal tg g %}selected="true" {% endifequal %}{% endfor %}>
+                            {{ g }}
+                        </option>
+                    {% endfor %}
+                </select>按住Ctrl多选
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label">创建者:</label>
+
+            <div class="controls">
+                {{ task.creator }}
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label class="control-label">负责人:</label>
+
+            <div class="controls">
+                <select name="principal" id="principal" class="modalLink" href="#modal1_staff_radio"
+                        onclick="setRadio_id('principal')">
+                    <option value="{{ task.principal.id }}" selected>{{ task.principal }}</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label class="control-label">执行人:</label>
+
+            <div class="controls">
+                <select name="executor" multiple id="executor" class="modalLink" href="#modal1_staff_checkbox"
+                        onclick="setCheckbox_id('executor')">
+                    {% for e in task.executor.all %}
+                        <option value="{{ e.id }}" selected>{{ e }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label class="control-label">可见度:</label>
+
+            <div class="controls">
+                <select name="visible" multiple id="visible" class="modalLink" href="#modal1_staff_checkbox"
+                        onclick="setCheckbox_id('visible')">
+                    {% for v in task.viewing.all %}
+                        <option value="{{ v.id }}" selected>{{ v }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <div class="controls">
+                <button class="btn btn-primary toTop" type="submit">保存</button>
+{#                <button class="btn btn-primary toTop" type="button" id='reset'>重置</button>#}
+                <a href="/task/modify/{{ task.id }}/" class="btn btn-warning">重置</a>
+                {# <button class="back_button btn btn-primary" name="back_task" iid="created_task">返回</button>#}
+            </div>
+        </div>
+    </fieldset>
+</form>
+
+{#<form class="task_submit_form" method="get" enctype="multipart/form-data">#}
+{#    <button id="edit_task" class="btn btn-primary" url="/task/modify/{{ task.id }}/" style="display: none"#}
+{#            type="button">修改#}
+{#    </button>#}
+{#</form>#}
+<script type="text/javascript" language="JavaScript">
+    $(document).ready(function () {
+        var val = $('#finish').val();
+        var len = val.length
+        $('#last_ch').text(1000 - len);
+    });
+    $(document).ready(function () {
+        $(document).on('input', '#finish', function () {
+            var val = $('#finish').val();
+            var len = val.length
+            if (len > 1000)
+                alert("完成标志的长度不能超过1000个字符,超过的部分在提交时会被截断!");
+            $('#last_ch').text(1000 - len);
+        });
+
+        $(document).on('click', '#reset', function () {
+
+            var url = "/task/modify/" + {{ task.id }} +"/"
+            $.get(url, function (data) {
+                $('#content div').empty();
+                $('#first').empty().html(data);
+               // $('#first').html(data);
+            });
+        });
+    });
+</script>
+{% endblock %}

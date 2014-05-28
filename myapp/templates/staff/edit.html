@@ -1,0 +1,85 @@
+{% include 'messages.html' %}
+{% include 'staff_group.html' %}
+{% include "frame.html" %}
+<form method="post" action="/staff/show/" class="form-horizontal staff_submit_form" >
+    <fieldset>
+        <legend><h1>编辑人员</h1></legend>
+
+        <div class="control-group">
+            <label class="control-label">用户名称:<span style="color: red">&lowast;</span></label>
+            <div class="controls">
+                <input name="UserName" type="text" value="{{ Staff.user.username }}">
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label">用户密码:<span style="color: red">&lowast;</span></label>
+            <div class="controls">
+                <input name="Password" alt="text" type="password" value="{{ Staff.user.password }}">
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label">确认密码:<span style="color: red">&lowast;</span></label>
+            <div class="controls">
+                <input name="Password2" alt="text" type="password" value="{{ Staff.user.password }}">
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label">真实姓名:<span style="color: red">&lowast;</span></label>
+            <div class="controls">
+                <input name="RealName" type="text" value="{{ Staff.name }}">
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label">性别:<span style="color: red">&lowast;</span></label>
+            <div class="controls">
+                <input type="radio" name="Gender" value = "1" {% if Staff.gender %}checked="checked"{% endif %}>男
+                <input type="radio" name="Gender" value = "0"{% if not Staff.gender %}checked="checked"{% endif %}>女
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label">用户身份:<span style="color: red">&lowast;</span></label>
+            <div class="controls">
+                <select name="Role">
+                    {% for item in RoleList %}
+                        {#                 {% if item.level > request.user.staff.role.level  %}#}
+                        <option value="{{ item.id }}"{% ifequal  Staff.role.name item.name %} selected="selected"{% endifequal  %}>{{ item.name }}</option>
+                        {#                 {% endif %}#}
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label">所属的组</label>
+            <div class="controls">
+                <select name="Group" multiple="multiple">
+                    {% for group in GroupList %}
+                        <option value="{{ group.id }}"  {% for item in Staff.group.all %} {% ifequal item.name group.name%} selected="selected"{% endifequal %}{% endfor %}>{{ group.name }}</option>
+                    {% endfor %}
+                </select>按住Ctrl多选
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label">设置日程可见:</label>
+            <div class="controls">
+                <select multiple="multiple" id="setCalendarDisp" name="setCalendarDisp" class="modalLink" href="#modal1_staff_checkbox"
+                        onclick="setCheckbox_id('setCalendarDisp')">
+                    {% for staff in Staff.visibleStaff.all %}
+                        <option value="{{ staff.id }}" selected>{{ staff.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label">用户描述</label>
+            <div class="controls">
+                <textarea name="Remark">{{ Staff.content }}</textarea>
+            </div>
+        </div>
+        <div class="control-group">
+            <div class="controls">
+                <button class="btn btn-primary staff_button toTop" name="editStaffSave" value="{{ Staff.id }}" type="submit">保存</button>
+                <button class="btn btn-primary back_button" name="back_staff" type="button"  iid="show_staffs">返回</button>
+            </div>
+        </div>
+    </fieldset>
+</form>

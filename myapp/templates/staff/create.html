@@ -1,0 +1,79 @@
+{% include 'messages.html' %}
+{% include 'staff_group.html' %}
+{% include "frame.html" %}
+<form method="post" action="/staff/create/" class="form-horizontal submit_form" enctype="multipart/form-data">
+    <fieldset>
+        <legend><h1>添加人员</h1></legend>
+        <div class="control-group">
+            <label class="control-label">用户名称:<span style="color: red">&lowast;</span></label>
+            <div class="controls">
+                <input name="UserName" type="text" value="{{ username }}">
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label">用户密码:<span style="color: red">&lowast;</span></label>
+            <div class="controls">
+                <input name="Password" alt="text" type="password" value="123456"> (默认:123456)
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label">确认密码:<span style="color: red">&lowast;</span></label>
+            <div class="controls">
+                <input name="Password2" alt="text" type="password" value="123456">
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label">真实姓名:<span style="color: red">&lowast;</span></label>
+            <div class="controls">
+                <input name="RealName" type="text" value="{{ name }}">
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label">性别:<span style="color: red">&lowast;</span></label>
+            <div class="controls">
+                <input type="radio" name="Gender" value = "1" checked="checked">男
+                <input type="radio" name="Gender" value = "0" {% if  girl %}checked="checked"{% endif %}>女
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label">用户身份:<span style="color: red" >&lowast;</span></label>
+            <div class="controls">
+                <select name="Role">
+                    {% for item in RoleList %}
+                        <option value="{{ item.id }}"{% ifequal  roleID item.id %} selected="selected"{% endifequal  %}>{{ item.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label">所属的组:</label>
+            <div class="controls">
+                <select name="Group" multiple="multiple">
+                    {% for group in GroupList %}
+                        <option value="{{ group.id }}"  {% for item in groupsID %} {% ifequal item|add:"0" group.id%} selected="selected"{% endifequal %}{% endfor %}>{{ group.name }}</option>
+                    {% endfor %}
+                </select>按住Ctrl多选
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label">设置日程可见:</label>
+            <div class="controls">
+                <select multiple="multiple" id="setCalendarDisp" name="setCalendarDisp" class="modalLink" href="#modal1_staff_checkbox"
+                        onclick="setCheckbox_id('setCalendarDisp')">
+                </select>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label">用户描述:</label>
+            <div class="controls">
+                <textarea name="Remark">{{ content }}</textarea>
+            </div>
+        </div>
+        <div class="control-group">
+            <div class="controls">
+                <button class="btn btn-primary toTop" type="submit">添加</button>
+                <button class="btn btn-primary back_button toTop" iid="create_staff">清空</button>
+            </div>
+        </div>
+    </fieldset>
+</form>

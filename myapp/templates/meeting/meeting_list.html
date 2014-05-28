@@ -1,0 +1,73 @@
+{% extends 'app/layout.html' %}
+{% load dictionary_extras %}
+{% block first %}
+{% include "messages.html" %}
+{% include "dataTables.html" %}
+{% include "frame.html" %}
+<legend><h1>所有会议</h1></legend>
+    <table class="table table-hover row-fluid table_show_detail" >
+        <thead>
+        <tr>
+            <th class="span1"><input type="text"  value="名称" class="search_init"></th>
+            <th class="span1"><input type="text"  value="时间" class="search_init"></th>
+            <th class="span1"><input type="text"  value="地点" class="search_init"></th>
+            <th class="span1"><input type="text"  value="发起人" class="search_init"></th>
+            <th class="span1"><input type="text"  value="参加人" class="search_init"></th>
+            <th class="span1"><input type="text"  value="内容" class="search_init"></th>
+            <th class="span1"></th>
+        </tr>
+        <tr>
+            <th class="span1">名称</th>
+            <th class="span1">时间</th>
+            <th class="span1">地点</th>
+            <th class="span1">发起人</th>
+            <th class="span1">参加人</th>
+            <th class="span1">内容</th>
+            <th class="span1 noFilter">操作</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for meeting in meeting_list %}
+            <tr>
+                <td><a class="detail_button" href="#second" url="/meeting/detail_meeting/{{ meeting.id }}/">{{ meeting.name }}</a></td>
+                <td>{{ meeting.time|date:"Y-m-d" }}</td>
+                <td>{{ meeting.place }}</td>
+                <td>{{ meeting.originator }}</td>
+                <td>
+                    {% if meeting.member.all|length > 3 %}
+                        {% for m in meeting.member.all|slice:":3" %}
+                        {{m}};
+                        {% endfor %}
+                        ...
+                    {% else %}
+                        {% for m in meeting.member.all%}
+                        {{m}};
+                        {% endfor %}
+                    {% endif %}
+                </td>
+                <td>{{ meeting.content| slice:"30" }}{% if meeting.content|length > 30 %}...{% endif %}</td>
+                <td>
+                    {% if staff.role.editMeeting or meeting.originator.id == staff.id %}
+
+                        <a
+                                href="/meeting/delete_meeting/{{ meeting.id }}/"
+                                class="btn btn-primary "
+                                onclick="if(confirm('删除后不可恢复，确定删除吗？')){return true;}return false;"
+                                >删除
+                        </a>
+                    {% endif %}
+
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+        <script>
+     $(document).ready(function () {
+        $('.nav li').removeClass('active');
+        $('.get_meeting_select').parent().addClass('active');
+
+    });
+    </script>
+{% endblock %}
+{#{% include "pagination.html" with some_list=meeting_list url=url %}#}

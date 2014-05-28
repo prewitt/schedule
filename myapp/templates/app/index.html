@@ -1,0 +1,239 @@
+{% extends "app/layout.html" %}
+{% load dictionary_extras %}
+{% block first %}
+{% include "messages.html" %}
+{% include "dataTables.html" %}
+{% include "frame.html" %}
+    <legend><h1>首页</h1></legend>
+    <div class="row-fluid">
+    <div class="span6">
+    <h2>待处理项目<small>每项最多显示5条</small></h2>
+    <h3>待确认</h3>
+    <table class="table  table_show">
+        <thead>
+        <tr>
+
+            <th>任务名称</th>
+            <th>开始时间</th>
+            <th>结束时间</th>
+            <th>任务状态</th>
+            <th>等级</th>
+            <th>完成标志</th>
+            <th>所属任务</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for task in affirm_task|slice:":5" %}
+            <tr>
+                <td><a class="detail_button" url="{% url 'task' task.id %}" href="#">{{ task.name }}</a></td>
+                <td>{{ task.begin_date|date:"Y-m-d" }}</td>
+                <td>{{ task.end_date|date:"Y-m-d" }}</td>
+                <td>
+                    {% ifequal task.state 1 %}
+                        <span class="label label-important">待确认</span>
+                    {% endifequal %}
+                    {% ifequal task.state 2 %}
+                        <span class="label label-info">进行中</span>
+                    {% endifequal %}
+                    {% ifequal task.state 3 %}<span class="label label-warning">待审核</span>{% endifequal %}
+                    {% ifequal task.state 4 %}<span class="label label-success">已结束</span>{% endifequal %}
+                </td>
+                <td>
+                    {% ifequal task.importance 1 %}一般{% endifequal %}
+                    {% ifequal task.importance 2 %}紧急{% endifequal %}
+                </td>
+                <td>
+                    {{ task.finish|sub_str:13 }}
+                </td>
+                <td>{{ task.parent }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <h3>待提交</h3>
+    <table class="table  table_show">
+        <thead>
+        <tr>
+            <th>任务名称</th>
+            <th>开始时间</th>
+            <th>结束时间</th>
+            <th>任务状态</th>
+            <th>等级</th>
+            <th>完成标志</th>
+            <th>所属任务</th>
+            {#            <th>所属组</th>#}
+            {#            <th >创建人</th>#}
+            {#            <th>执行人</th>#}
+        </tr>
+        </thead>
+        <tbody>
+        {% for task in submit_task|slice:":5" %}
+            <tr>
+                <td><a class="detail_button" url="{% url 'task' task.id %}" href="#">{{ task.name }}</a></td>
+                <td>{{ task.begin_date|date:"Y-m-d" }}</td>
+                <td>{{ task.end_date|date:"Y-m-d" }}</td>
+                <td>
+                    {% ifequal task.state 1 %}
+                        <span class="label label-important">待确认</span>
+                    {% endifequal %}
+                    {% ifequal task.state 2 %}
+                        <span class="label label-info">进行中</span>
+                    {% endifequal %}
+                    {% ifequal task.state 3 %}<span class="label label-warning">待审核</span>{% endifequal %}
+                    {% ifequal task.state 4 %}<span class="label label-success">已结束</span>{% endifequal %}
+                </td>
+                <td>
+                    {% ifequal task.importance 1 %}一般{% endifequal %}
+                    {% ifequal task.importance 2 %}紧急{% endifequal %}
+                </td>
+                <td>
+                    {{ task.finish|sub_str:13 }}
+                </td>
+                <td>{{ task.parent }}</td>
+
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <h3>待审核</h3>
+    <table class="table table_show">
+        <thead>
+        <tr>
+
+            <th>任务名称</th>
+            <th>开始时间</th>
+            <th>结束时间</th>
+            <th>任务状态</th>
+            <th>等级</th>
+            <th>完成标志</th>
+            <th>所属任务</th>
+            {#            <th>所属组</th>#}
+            {#            <th>负责人</th>#}
+            {#            <th>执行人</th>#}
+        </tr>
+        </thead>
+        <tbody>
+{#        {% for task in check_task|slice:":10" %}#}
+          {% for task in check_task|slice:":5" %}
+            <tr>
+                <td>
+
+                    <a class="detail_button" url="{% url 'task' task.id %}" href="#">{{ task.name }}</a>
+                </td>
+                <td>
+                    {{ task.begin_date|date:"Y-m-d" }}
+                </td>
+                <td>
+                    {{ task.end_date|date:"Y-m-d" }}
+                </td>
+                <td>
+                    {% ifequal task.state 1 %}<span class="label label-important">待确认</span>{% endifequal %}
+                    {% ifequal task.state 2 %}<span class="label label-info">进行中</span>{% endifequal %}
+                    {% ifequal task.state 3 %}<span class="label label-warning">待审核</span>{% endifequal %}
+                    {% ifequal task.state 4 %}<span class="label label-success">已结束</span>{% endifequal %}
+                </td>
+                <td>
+                    {% ifequal task.importance 1 %}一般{% endifequal %}
+                    {% ifequal task.importance 2 %}紧急{% endifequal %}
+                </td>
+                <td>
+                    {{ task.finish|sub_str:13 }}
+                </td>
+                <td>
+                    {{ task.parent }}
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    </div>
+    <div class="span6">
+    <h2>近期会议<small>每项最多显示10条</small></h2>
+        <h3>我创建的<small>本周{{ week_num_launched }}个会议</small></h3>
+        <table class="table  table_show">
+            <thead>
+            <tr>
+                <th>名称</th>
+                <th>时间</th>
+                <th>地点</th>
+                <th>参加人</th>
+                <th>内容</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for meeting in launched_meeting|slice:":10" %}
+                <tr>
+                <td><a class="detail_button" href="#second" url="/meeting/detail_meeting/{{ meeting.id }}/">{{ meeting.name }}</a></td>
+                    <td>{{ meeting.time|date:"Y-m-d" }}</td>
+                    <td>{{ meeting.place }}</td>
+                    <td>
+                        {% if meeting.member.all|length > 3 %}
+                            {% for m in meeting.member.all|slice:":3" %}
+                                {{ m }};
+                            {% endfor %}
+                            ...
+                        {% else %}
+                            {% for m in meeting.member.all %}
+                                {{ m }};
+                            {% endfor %}
+                        {% endif %}
+                    </td>
+                    <td>
+                        {{ meeting.content| slice:"15" }}
+                        {% if meeting.content|length > 15 %}...{% endif %}
+                    </td>
+
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+        <h3>待参加的<small>本周{{ week_num_joined }}个会议</small></h3>
+        <table class="table table_show">
+            <thead>
+            <tr>
+                <th>名称</th>
+                <th>时间</th>
+                <th>地点</th>
+                <th>参加人</th>
+                <th>内容</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for meeting in joined_meeting|slice:":10" %}
+                <tr>
+                <td><a class="detail_button" href="#second" url="/meeting/detail_meeting/{{ meeting.id }}/">{{ meeting.name }}</a></td>
+                    <td>{{ meeting.time|date:"Y-m-d" }}</td>
+                    <td>{{ meeting.place }}</td>
+                    <td>
+                        {% if meeting.member.all|length > 3 %}
+                            {% for m in meeting.member.all|slice:":3" %}
+                                {{ m }};
+                            {% endfor %}
+                            ...
+                        {% else %}
+                            {% for m in meeting.member.all %}
+                                {{ m }};
+                            {% endfor %}
+                        {% endif %}
+                    </td>
+                    <td>
+                        {{ meeting.content| slice:"15" }}
+                        {% if meeting.content|length > 15 %}...{% endif %}
+                    </td>
+
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+    </div>
+
+    </div>
+    
+        <script>
+     $('.nav li').removeClass('active');
+     $('.index_select').parent().addClass('active');
+    </script>
+{% endblock %}

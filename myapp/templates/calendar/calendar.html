@@ -1,0 +1,40 @@
+<script>
+    var Month = "{{ Month }}";
+    var YearBeforeThis = "{{ YearBeforeThis }}";
+    var PreviousYear = "{{ PreviousYear }}";
+    var PreviousMonth = "{{PreviousMonth  }}";
+    var NextYear = "{{ NextYear }}";
+    var NextMonth = "{{ NextMonth }}";
+    var YearAfterThis = "{{ YearAfterThis }}";
+    var StaffID="{{ StaffID }}"
+</script>
+    {% include "messages.html" %}
+<div class="span7 myCalendar">
+    {% if not me  %}
+        <h2 {% if not me %}style="display: inline"{% endif %}><strong>{{ staff.name }}</strong>的日程安排</h2>
+        <button class="btn clear_third_button"><i class="icon-remove"></i></button>
+    {% else %}
+        <legend><h2 {% if not me %}style="display: inline"{% endif %}><strong>{{ staff.name }}</strong>的日程安排</h2></legend>
+    {% endif %}
+    <table width="100%">
+        <tr>
+            <td width="20%" align="left">
+                &lt;&lt;&lt;&lt; <a id="get_year_before_calendar" href="#" >{{YearBeforeThis}}年</a>
+            </td>
+            <td width="20%" align="left">
+                &lt;&lt; <a id="get_previous_month_calendar"  href="#">{{PreviousYear}}年{{PreviousMonth}}月</a>
+            </td>
+            <td width="20%" align="center"><a id="get_calendar_now" href="#">本月</a></td>
+            <td width="20%" align="right">
+                <a id="get_next_month_calendar" href="#">{{NextYear}}年{{NextMonth}}月</a> &gt;&gt;
+            </td>
+            <td width="20%" align="right">
+                <a id="get_year_after_calendar" href="#">{{YearAfterThis}}年</a> &gt;&gt;&gt;&gt;
+            </td>
+        </tr>
+    </table>
+    <div id="calendar">
+        {{Calendar}}
+    </div>
+
+</div>
