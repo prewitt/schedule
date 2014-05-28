@@ -2,7 +2,7 @@
 *.pot
 *.pyc
 .idea/
-*.db
+#*.db
 software/
 myapp/app/migrations/
 myapp/staff/migrations/
