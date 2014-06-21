@@ -24,14 +24,14 @@ class ContestCalendar(HTMLCalendar):
                 cssclass += ' filled'
                 body = []
                 #body.append('<div id="daySummary"><a   href="/calendar/%s/%s/%s">' % (self.year,self.month,day))
-                body.append('<div class="get_day_items_div" year="%s" month="%s" day="%s" id="%s" href="#">' % (self.year,self.month,day,self.id))
-                body.append(esc(self.contest_events[day]))
+                body.append('<div class="get_day_items_div scroll_type"  year="%s" month="%s" day="%s" id="%s" href="#">' % (self.year,self.month,day,self.id))
+                body.append(self.contest_events[day])
                 body.append('</div>')
                 return self.day_cell(cssclass, '<div class="dayNumber">%d</div> %s' % (day, ''.join(body)))
             else:
                 body = []
                 #body.append('<div id="daySummary"><a  href="/calendar/%s/%s/%s">' % (self.year,self.month,day))
-                body.append('<div class="get_day_items_div" year="%s" month="%s" day="%s" id="%s" href="#">' % (self.year,self.month,day,self.id))
+                body.append('<div class="get_day_items_div scroll_type"  year="%s" month="%s" day="%s" id="%s" href="#">' % (self.year,self.month,day,self.id))
                 body.append(u'')
                 body.append('</div>')
                 return self.day_cell(cssclass, '<div class="dayNumber">%d</div> %s' % (day, ''.join(body)))
@@ -62,6 +62,8 @@ class ContestCalendar(HTMLCalendar):
         #field = lambda contest: contest.content
         tmpDict={}
         for tmp in pContestEvents:
+            if tmp.summary==None:
+                tmp.summary=""
             tmpDict[tmp.date.day]=tmp.summary
         return tmpDict
         #return dict(

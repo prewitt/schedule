@@ -1,6 +1,6 @@
 #-*- coding: UTF-8 -*-
 __author__ = 'PW'
-from datetime import datetime
+import  datetime
 from models import ContestCalendar
 from django.shortcuts import render_to_response, RequestContext
 from django.utils.safestring import mark_safe
@@ -13,6 +13,9 @@ from django.contrib.auth.decorators import login_required
 from app.views import permission_required_with
 from django.core.cache import cache
 from django.views.decorators.cache import cache_page
+from django.db.models import F
+from bulk_update.helper import bulk_update
+from django.db import connection,transaction
 
 @login_required(login_url="/app/login/")
 def named_month(pMonthNumber):
@@ -28,7 +31,7 @@ def home(request, pUserID):
     """
     Show calendar of events this month
     """
-    lToday = datetime.now()
+    lToday = datetime.datetime.now()
     return calendar(request, lToday.year, lToday.month, pUserID)
 
 
@@ -85,41 +88,89 @@ def todayItems(request):
     """
         get today items to display on html
     """
-    lToday = datetime.now()
+    lToday = datetime.datetime.now()
     return getDayItems(request, lToday.year, lToday.month, lToday.day, 0)
 
 def updateSummary(staffID,taskID):
     """
         updateTheSummary
     """
-
-    lToday = datetime.now()
+    lToday = datetime.datetime.now()
     lYear = int(lToday.year)
     lMonth = int(lToday.month)
     lDay=int(lToday.day)
     staff=Staff.objects.get(id=staffID)
     mySummary=Task.objects.get(id=taskID).name.strip()
-    if Calendar.objects.filter(date=datetime(lYear, lMonth, lDay, 0),creator=staff).count()==0:
-        Calendar.objects.create(date=datetime(lYear, lMonth, lDay, 0), summary=mySummary, creator=staff)
+    if Calendar.objects.filter(date=datetime.datetime(lYear, lMonth, lDay, 0),creator=staff).count()==0:
+        Calendar.objects.create(date=datetime.datetime(lYear, lMonth, lDay, 0), summary=mySummary, creator=staff)
     else:
-        calendar=Calendar.objects.get(date=datetime(lYear, lMonth, lDay, 0), creator=staff)
+        calendar=Calendar.objects.get(date=datetime.datetime(lYear, lMonth, lDay, 0), creator=staff)
         calendar.summary=mySummary
         calendar.save()
+
+def appendSummaryPeriod(staffID,taskID):
+    staff=Staff.objects.get(id=staffID)
+    task=Task.objects.get(id=taskID)
+    appendSummaryPeriodDetail(staff,task)
+
+def appendSummaryBugPeriod(staffID,bugID):
+    staff=Staff.objects.get(id=staffID)
+    bug=Bug.objects.get(id=bugID)
+    appendSummaryPeriodDetail(staff,bug)
+
+def appendSummaryPeriodDetail(staff,task_or_bug):
+    """
+        appendTheSummary
+    """
+    # staff=Staff.objects.get(id=staffID)
+    # task=Task.objects.get(id=taskID)
+    mySummary=task_or_bug.name.strip()
+    start=task_or_bug.begin_date
+    end=task_or_bug.end_date
+    calendars=Calendar.objects.filter(date__range=[start,end],creator=staff).order_by('date').all()
+    for c in calendars:
+        if(c.summary):
+            c.summary+="; "+mySummary
+        else:
+            c.summary=mySummary
+    if calendars and len(calendars)>0:
+        bulk_update(calendars,update_fields=['summary'],batch_size=400)
+    transaction.commit_unless_managed()
+    index=0
+    length=len(calendars)
+    new_calendar=[]
+    for n in range(int ((end - start).days)+1):
+        date=start + datetime.timedelta(n)
+        lYear = int(date.year)
+        lMonth = int(date.month)
+        lDay=int(date.day)
+        if(index<length and date==calendars[index].date):
+            index=index+1
+        else:
+            tmp_cal=Calendar()
+            tmp_cal.date=datetime.datetime(lYear, lMonth, lDay, 0)
+            tmp_cal.summary=mySummary
+            tmp_cal.creator=staff
+            new_calendar.append(tmp_cal)
+    if new_calendar and len(new_calendar)>0:
+        Calendar.objects.bulk_create(new_calendar)
+    del new_calendar
+
 
 def updateSummaryBug(staffID,bugID):
     """
         updateTheSummary
     """
-    lToday = datetime.now()
+    lToday = datetime.datetime.now()
     lYear = int(lToday.year)
     lMonth = int(lToday.month)
     lDay=int(lToday.day)
     staff=Staff.objects.get(id=staffID)
     mySummary=Bug.objects.get(id=bugID).name.strip()
-    if Calendar.objects.filter(date=datetime(lYear, lMonth, lDay, 0),creator=staff).count()==0:
-        Calendar.objects.create(date=datetime(lYear, lMonth, lDay, 0), summary=mySummary, creator=staff)
+    if Calendar.objects.filter(date=datetime.datetime(lYear, lMonth, lDay, 0),creator=staff).count()==0:
+        Calendar.objects.create(date=datetime.datetime(lYear, lMonth, lDay, 0), summary=mySummary, creator=staff)
     else:
-        calendar=Calendar.objects.get(date=datetime(lYear, lMonth, lDay, 0), creator=staff)
+        calendar=Calendar.objects.get(date=datetime.datetime(lYear, lMonth, lDay, 0), creator=staff)
         calendar.summary=mySummary
         calendar.save()
 
@@ -235,7 +286,7 @@ def addDayItems(request, pYear, pMonth, pDay):
         myList = myDict['content']
         myListNum = myDict['contentNum']
         mySummary = myDict['summary'][0].strip()
-        Calendar.objects.filter(date=datetime(lYear, lMonth, lDay, 0), creator=request.user.staff).delete()
+        Calendar.objects.filter(date=datetime.datetime(lYear, lMonth, lDay, 0), creator=request.user.staff).delete()
         i = 0
         notNullNum=0
         myContent=[]
@@ -247,7 +298,7 @@ def addDayItems(request, pYear, pMonth, pDay):
                 notNullNum+=1
         if(mySummary == '' and notNullNum ==0):
             return
-        calendar=Calendar.objects.create(date=datetime(lYear, lMonth, lDay, 0),creator=request.user.staff)
+        calendar=Calendar.objects.create(date=datetime.datetime(lYear, lMonth, lDay, 0),creator=request.user.staff)
         calendar.content8= myContent[0]
         calendar.content9= myContent[1]
         calendar.content10=myContent[2]
@@ -279,7 +330,7 @@ def showList(request):
     """
         show others` calendar
     """
-    lToday = datetime.now()
+    lToday = datetime.datetime.now()
     lYear = int(lToday.year)
     lMonth = int(lToday.month)
     lDay=int(lToday.day)
@@ -289,7 +340,7 @@ def showList(request):
     else:
         staffList=Staff.objects.filter(visible=True)
     for staff in staffList:
-        list=Calendar.objects.filter(date=datetime(lYear, lMonth, lDay, 0),creator=staff)
+        list=Calendar.objects.filter(date=datetime.datetime(lYear, lMonth, lDay, 0),creator=staff)
         if(list.count()==1):
             StaffDict[staff]=list[0].summary
         else:

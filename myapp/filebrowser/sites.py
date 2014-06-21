@@ -89,7 +89,7 @@ def get_default_site(app_name='filebrowser'):
     app_list = resolver.app_dict[app_name]
     if not name in app_list:
         name = app_list[0]
-    
+
     return get_site_dict()[name]
 
 
@@ -105,15 +105,15 @@ class FileBrowserSite(object):
         self.task_name=''
         # Register this site in the global site cache
         register_site(self.app_name, self.name, self)
-        
+
         # Per-site settings:
         self.directory = DIRECTORY
         self.srcDirectory=DIRECTORY
         self.downLoadPath=PATH_FILE_DOWNLOAD
-    
+
     def _directory_get(self):
         return self._directory
-    
+
     def _directory_set(self, val):
         self._directory = val
 
@@ -124,10 +124,10 @@ class FileBrowserSite(object):
         return never_cache(view)
 
     def get_urls(self):
-        from django.conf.urls.defaults import patterns, url, include    
+        from django.conf.urls.defaults import patterns, url, include
 
         urlpatterns = patterns('',
-    
+
             # filebrowser urls (views)
             url(r'^browse/$', path_exists(self, self.filebrowser_view(self.browse_file)), name="fb_browse"),
             url(r'^browse/(.*)/$', self.get_task_path),
@@ -218,7 +218,7 @@ class FileBrowserSite(object):
             if filtered:
                 return False
             return True
-        
+
         query = request.GET.copy()
         path = u'%s' % os.path.join(self.directory, query.get('dir', ''))
         filelisting = FileListing(path,
@@ -226,21 +226,21 @@ class FileBrowserSite(object):
             sorting_by=query.get('o', DEFAULT_SORTING_BY),
             sorting_order=query.get('ot', DEFAULT_SORTING_ORDER),
             site=self)
-        
+
         files = []
         if SEARCH_TRAVERSE and query.get("q"):
             listing = filelisting.files_walk_filtered()
         else:
             listing = filelisting.files_listing_filtered()
-        
+
         # If we do a search, precompile the search pattern now
         do_search = query.get("q")
         if do_search:
             re_q = re.compile(query.get("q").lower(), re.M)
-        
+
         filter_type = query.get('filter_type')
         filter_date = query.get('filter_date')
-        
+
         for fileobject in listing:
             # date/type filter
             append = False
@@ -252,10 +252,10 @@ class FileBrowserSite(object):
             # append
             if append:
                 files.append(fileobject)
-        
+
         filelisting.results_total = len(listing)
         filelisting.results_current = len(files)
-        
+
         p = Paginator(files, LIST_PER_PAGE)
         page_nr = request.GET.get('p', '1')
         try:
@@ -404,7 +404,7 @@ class FileBrowserSite(object):
                         form.errors['name'] = forms.util.ErrorList([_('Error creating folder.')])
         else:
             form = CreateDirForm(path, filebrowser_site=self)
-        
+
         return render_to_response('filebrowser/createdir.html', {
             'form': form,
             'query': query,
@@ -462,7 +462,7 @@ class FileBrowserSite(object):
         else:
             filelisting = None
             additional_files = None
-        
+
         return render_to_response('filebrowser/delete_confirm.html', {
             'fileobject': fileobject,
             'filelisting': filelisting,
@@ -521,14 +521,14 @@ class FileBrowserSite(object):
     def detail(self, request):
         """
         Show detail page for a file.
-        
+
         Rename existing File/Directory (deletes existing Image Versions/Thumbnails).
         """
         from filebrowser.forms import ChangeForm
         query = request.GET
         path = u'%s' % os.path.join(self.directory, query.get('dir', ''))
         fileobject = FileObject(os.path.join(path, query.get('filename', '')), site=self)
-        
+
         if request.method == 'POST':
             form = ChangeForm(request.POST, path=path, fileobject=fileobject, filebrowser_site=self)
             if form.is_valid():
@@ -561,7 +561,7 @@ class FileBrowserSite(object):
                     form.errors['name'] = forms.util.ErrorList([_('Error.')])
         else:
             form = ChangeForm(initial={"name": fileobject.filename}, path=path, fileobject=fileobject, filebrowser_site=self)
-        
+
         return render_to_response('filebrowser/detail.html', {
             'form': form,
             'fileobject': fileobject,
@@ -581,7 +581,7 @@ class FileBrowserSite(object):
         query = request.GET
         path = u'%s' % os.path.join(self.directory, query.get('dir', ''))
         fileobject = FileObject(os.path.join(path, query.get('filename', '')), site=self)
-        
+
         return render_to_response('filebrowser/version.html', {
             'fileobject': fileobject,
             'query': query,
@@ -617,20 +617,20 @@ class FileBrowserSite(object):
             # Check for name collision with a directory
             if file_already_exists and self.storage.isdir(file_name):
                 ret_json = {'success': False, 'filename': filedata.name}
-                return HttpResponse(json.dumps(ret_json)) 
-            
+                return HttpResponse(json.dumps(ret_json))
+
             signals.filebrowser_pre_upload.send(sender=request, path=request.POST.get('folder'), file=filedata, site=self)
             uploadedfile = handle_file_upload(path, filedata, site=self)
-            
+
             if file_already_exists and OVERWRITE_EXISTING:
                 old_file = smart_unicode(file_name)
                 new_file = smart_unicode(uploadedfile)
                 self.storage.move(new_file, old_file, allow_overwrite=True)
             else:
                 file_name = smart_unicode(uploadedfile)
-            
+
             signals.filebrowser_post_upload.send(sender=request, path=request.POST.get('folder'), file=FileObject(smart_unicode(file_name), site=self), site=self)
-            
+
             # let Ajax Upload know whether we saved it or not
             ret_json = {'success': True, 'filename': filedata.name}
             return HttpResponse(json.dumps(ret_json))

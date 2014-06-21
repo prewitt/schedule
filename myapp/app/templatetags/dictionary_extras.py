@@ -3,6 +3,7 @@ __author__ = 'Maple'
 from django import template
 from filebrowser.sites import site
 import re
+
 register = template.Library()
 
 
@@ -44,15 +45,35 @@ def sub_str(string, n):
 @register.simple_tag(name='task_path')
 def task_path(path):
     strinfo = re.compile("\\|:|\*|<|>|\?|:|\"|\|")
-    path=strinfo.sub('_',path)
-    site.task_path=path
-    site.directory=site.srcDirectory+site.task_path
-    pathList=site.directory.split('/')
-    i=0
-    str=''
+    path = strinfo.sub('_', path)
+    site.task_path = path
+    site.directory = site.srcDirectory + site.task_path
+    pathList = site.directory.split('/')
+    i = 0
+    str = ''
     for item in pathList:
-        if item !='':
-            str+=item+'/'
+        if item != '':
+            str += item + '/'
             site.createTaskDir(str)
-            site.task_name=item
-        i+=1
+            site.task_name = item
+        i += 1
+
+
+@register.filter(name='add_br')
+def add_br(str, n=50):
+    if str == '' or str == 'None' or str is None:
+        return ''
+    ret = ""
+    for i, c in enumerate(str):
+        if i % n == 0 and i != 0:
+            ret += '<br>'
+        ret += c
+    return ret
+
+
+@register.filter(name='unrd_cmmt')
+def unrd_cmmt(unc, task):
+    for u in unc:
+        if u.task == task:
+            return True
+    return False

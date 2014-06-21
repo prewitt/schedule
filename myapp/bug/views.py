@@ -8,7 +8,7 @@ from django.shortcuts import render_to_response, redirect
 from django.template import RequestContext
 from app.models import Task, Staff, Group, Bug, BugComment
 from app.views import valid_time, cache_on_auth
-from myCalendar.views import updateSummaryBug
+from myCalendar.views import appendSummaryBugPeriod
 from django.core.cache import cache
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import cache_page
@@ -221,7 +221,7 @@ def del_bug(request, bug_id):
 def add_schedule(request, bug_id, doc):
     context = RequestContext(request)
     staff_id = request.user.staff.id
-    updateSummaryBug(int(staff_id), int(bug_id))
+    appendSummaryBugPeriod(int(staff_id), int(bug_id))
     cache.clear()
     messages.success(request, '加入日程成功')
     comments = BugComment.objects.all()

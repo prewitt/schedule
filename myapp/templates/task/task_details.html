@@ -1,156 +1,174 @@
-{% load static %}
-{% load dictionary_extras %}
-{% include "frame.html" %}
-<div>
-    <div class="task_head_first" style="display: inline;"><br/><br/><h2 style="display: inline">任务:<strong>{{ task.name }}</strong>的详细信息</h2></div>
-    <div style="float: right;display: inline;">
-        <h4 style="display: inline;">操作: </h4>
-        {% ifequal task.creator staff %}
-            <a  class="btn"  onclick="window.open('/task/modify/{{ task.id }}/')">修改</a>
-        {% endifequal %}
-        {% ifequal task.istemp 0 %}
-            <a class="modalLink btn get_comments" task_id="{{ task.id }}" href="#modal1_{{ task.id }}_detail">评论</a>
-            <a class="modalLink btn setFileBrowserUrl" name="{{ taskPath }}" href="#modal1_file"  >文件</a>
-        {% endifequal %}
-        <a class="btn  clear_task_node_detail" id="{{ task.id }}" href="#first">关闭</a>
+<div id = "task1_node_{{ task.id }}" >
+
+    {% load static %}
+    {% load dictionary_extras %}
+    {% include "frame.html" %}
+    <div>
+        <div class="task_head_first" style="display: inline;"><br/><br/><h2 style="display: inline">任务:<strong>{{ task.name }}</strong>的详细信息</h2></div>
+        <div style="float: right;display: inline;">
+            <h4 style="display: inline;">操作: </h4>
+            {% ifequal task.creator staff %}
+                <a  class="btn"  onclick="window.open('/task/modify/{{ task.id }}/')">修改</a>
+            {% endifequal %}
+            {% ifequal task.istemp 0 %}
+                <a class="modalLink btn get_comments" task_id="{{ task.id }}" href="#modal1_{{ task.id }}_detail">评论</a>
+                <a class="modalLink btn setFileBrowserUrl" name="{{ taskPath }}" href="#modal1_file"  >文件</a>
+            {% endifequal %}
+            <a class="btn  clear_task_node_detail" id="{{ task.id }}" href="#first">关闭</a>
+        </div>
+        <div style="clear:both;"></div>
     </div>
-    <div style="clear:both;"></div>
-</div>
-<dl class="dl-horizontal">
-    <dt>任务名称</dt>
-    <dd>{{ task.name }}</dd>
-    <dt>创建时间</dt>
-    <dd>{{ task.create_date|date:"Y-m-d" }}</dd>
-    <dt>开始时间</dt>
-    <dd>{{ task.begin_date|date:"Y-m-d" }}</dd>
-    <dt>结束时间</dt>
-    <dd>{{ task.end_date|date:"Y-m-d" }}</dd>
-    <dt>状态</dt>
-    <dd>{% ifequal task.state 1 %}<span class="label label-important">待确认</span>{% endifequal %}
-        {% ifequal task.state 2 %}<span class="label label-info">进行中</span>{% endifequal %}
-        {% ifequal task.state 3 %}<span class="label label-warning">待审核</span>{% endifequal %}
-        {% ifequal task.state 4 %}<span class="label label-success">已结束</span>{% endifequal %}</dd>
-    <dt>等级</dt>
-    <dd>
-        {% ifequal task.importance 1 %}一般{% endifequal %}
-        {% ifequal task.importance 2 %}紧急{% endifequal %}
-    </dd>
-    <dt>内容</dt>
-    <dd>{{ task.content }}</dd>
-    <dt>完成标志</dt>
-    <dd>
-        {% ifequal task.finish '' %}
-            无
-        {% else %}
-            {{ task.finish }}
-        {% endifequal %}
-    </dd>
-    <dt>创建人</dt>
-    <dd>
-        {#        {% if map_schedule|bigger_than:2 %}#}
-        {#            <a class="get_others_calendar" url="/calendar/{{ task.creator.user.id }}/"#}
-        {#               href="#third">{{ task.creator }}</a>#}
-        {#        {% else %}#}
-        {#            {{ task.creator }}#}
-        {#        {% endif %}#}
-        {% ifequal enCalendar True %}
-            <a class="get_others_calendar" url="/calendar/{{ task.creator.id }}/"
-               href="#third">{{ task.creator }}</a>
-        {% else %}
-            {% ifequal calendar|staff_in:task.creator True %}
+    <dl class="dl-horizontal">
+        <dt>任务名称</dt>
+        <dd>{{ task.name }}&nbsp;</dd>
+        <dt>创建时间</dt>
+        <dd>{{ task.create_date|date:"Y-m-d" }}&nbsp;</dd>
+        <dt>开始时间</dt>
+        <dd>{{ task.begin_date|date:"Y-m-d" }}&nbsp;</dd>
+        <dt>结束时间</dt>
+        <dd>{{ task.end_date|date:"Y-m-d" }}&nbsp;</dd>
+        <dt>状态</dt>
+        <dd>{% ifequal task.state 1 %}<span class="label label-important">待确认</span>{% endifequal %}
+            {% ifequal task.state 2 %}<span class="label label-info">进行中</span>{% endifequal %}
+            {% ifequal task.state 3 %}<span class="label label-warning">待审核</span>{% endifequal %}
+            {% ifequal task.state 4 %}<span class="label label-success">已结束</span>{% endifequal %}
+        &nbsp;
+        </dd>
+        <dt>等级</dt>
+        <dd>
+            {% ifequal task.importance 1 %}一般{% endifequal %}
+            {% ifequal task.importance 2 %}紧急{% endifequal %}
+        &nbsp;
+        </dd>
+        <dt >内容</dt>
+        <dd>
+            {% autoescape off %}
+                {{ task.content|add_br  }}
+            {% endautoescape %}
+        &nbsp;
+        </dd>
+        <dt>完成标志</dt>
+        <dd>
+            {% ifequal task.finish '' %}
+                无
+            {% else %}
+                {% autoescape off %}
+                    {{ task.finish|add_br }}
+                {% endautoescape %}
+
+            {% endifequal %}
+        &nbsp;
+        </dd>
+        <dt>创建人</dt>
+        <dd>
+            {#        {% if map_schedule|bigger_than:2 %}#}
+            {#            <a class="get_others_calendar" url="/calendar/{{ task.creator.user.id }}/"#}
+            {#               href="#third">{{ task.creator }}</a>#}
+            {#        {% else %}#}
+            {#            {{ task.creator }}#}
+            {#        {% endif %}#}
+            {% ifequal enCalendar True %}
                 <a class="get_others_calendar" url="/calendar/{{ task.creator.id }}/"
                    href="#third">{{ task.creator }}</a>
             {% else %}
-                {{ task.creator }}
+                {% ifequal calendar|staff_in:task.creator True %}
+                    <a class="get_others_calendar" url="/calendar/{{ task.creator.id }}/"
+                       href="#third">{{ task.creator }}</a>
+                {% else %}
+                    {{ task.creator }}
+                {% endifequal %}
             {% endifequal %}
-        {% endifequal %}
-    </dd>
-    <dt>负责人</dt>
-    <dd>
-        {#        {% if map_schedule|bigger_than:1 %}#}
-        {#            <a class="get_others_calendar" url="/calendar/{{ task.principal.user.id }}/"#}
-        {#               href="#third">{{ task.principal }}</a>#}
-        {#        {% else %}#}
-        {#            {{ task.principal }}#}
-        {#        {% endif %}#}
-        {% ifequal enCalendar True %}
-            <a class="get_others_calendar" url="/calendar/{{ task.principal.id }}/"
-               href="#third">{{ task.principal }}</a>
-        {% else %}
-            {% ifequal calendar|staff_in:task.principal True %}
+        &nbsp;
+        </dd>
+        <dt>负责人</dt>
+        <dd>
+            {#        {% if map_schedule|bigger_than:1 %}#}
+            {#            <a class="get_others_calendar" url="/calendar/{{ task.principal.user.id }}/"#}
+            {#               href="#third">{{ task.principal }}</a>#}
+            {#        {% else %}#}
+            {#            {{ task.principal }}#}
+            {#        {% endif %}#}
+            {% ifequal enCalendar True %}
                 <a class="get_others_calendar" url="/calendar/{{ task.principal.id }}/"
                    href="#third">{{ task.principal }}</a>
             {% else %}
-                {{ task.principal }}
-            {% endifequal %}
-        {% endifequal %}
-    </dd>
-    <dt>执行人</dt>
-    <dd>
-        {#        {% if map_schedule|bigger_than:0 %}#}
-        {#            {% if map_schedule|bigger_than:1 %}#}
-        {#                {% for m in task.executor.all %}#}
-        {#                    <a class="get_others_calendar" url="/calendar/{{ m.user.id }}/" href="#third">{{ m }} </a>#}
-        {#                {% endfor %}#}
-        {#            {% else %}#}
-        {#                {% for m in task.executor.all %}#}
-        {#                    {% ifequal m user %}#}
-        {#                        <a class="get_others_calendar" url="/calendar/{{ m.user.id }}/" href="#third">{{ m }} </a>#}
-        {#                    {% else %}#}
-        {#                        {{ m }}#}
-        {#                    {% endifequal %}#}
-        {#                {% endfor %}#}
-        {#            {% endif %}#}
-        {#        {% else %}#}
-        {#            {% for m in task.executor.all %}{{ m }}{% endfor %}#}
-        {#        {% endif %}#}
-        {% for m in task.executor.all %}
-            {% ifequal enCalendar True %}
-                <a class="get_others_calendar" url="/calendar/{{ m.id }}/" href="#third">{{ m }} </a>
-            {% else %}
-                {% ifequal calendar|staff_in:m True %}
-                    <a class="get_others_calendar" url="/calendar/{{ m.id }}/" href="#third">{{ m }} </a>
+                {% ifequal calendar|staff_in:task.principal True %}
+                    <a class="get_others_calendar" url="/calendar/{{ task.principal.id }}/"
+                       href="#third">{{ task.principal }}</a>
                 {% else %}
-                    {{ m }}
+                    {{ task.principal }}
                 {% endifequal %}
             {% endifequal %}
-            {% if forloop.counter0|divisibleby:10  %}
-                </br>
-            {% endif %}
-        {% endfor %}
-    </dd>
-</dl>
-<div class="overlay"></div>
-<div id="modal1_{{ task.id }}_detail" class="modal" style="display:none;">
-    <div id="comment_detail_{{ task.id }}">aa</div>
-    <form method="post" class="form_comment" id="form_comment_id_{{ task.id }}"
-          action="/task/add_comment/p1{{ task.id }}p21p31/" style="text-align: center;width:auto;">
-        {{ nf.as_p }}
-        <input type="button" value="提交" class="btn btn-primary form_comment"onclick="$('#form_comment_id_{{ task.id }}').submit()">&nbsp;&nbsp;&nbsp;
-        <button class="closeBtn btn btn-primary">返回</button>
-    </form>
+        &nbsp;
+        </dd>
+        <dt>执行人</dt>
+        <dd>
+            {#        {% if map_schedule|bigger_than:0 %}#}
+            {#            {% if map_schedule|bigger_than:1 %}#}
+            {#                {% for m in task.executor.all %}#}
+            {#                    <a class="get_others_calendar" url="/calendar/{{ m.user.id }}/" href="#third">{{ m }} </a>#}
+            {#                {% endfor %}#}
+            {#            {% else %}#}
+            {#                {% for m in task.executor.all %}#}
+            {#                    {% ifequal m user %}#}
+            {#                        <a class="get_others_calendar" url="/calendar/{{ m.user.id }}/" href="#third">{{ m }} </a>#}
+            {#                    {% else %}#}
+            {#                        {{ m }}#}
+            {#                    {% endifequal %}#}
+            {#                {% endfor %}#}
+            {#            {% endif %}#}
+            {#        {% else %}#}
+            {#            {% for m in task.executor.all %}{{ m }}{% endfor %}#}
+            {#        {% endif %}#}
+            {% for m in task.executor.all %}
+                {% ifequal enCalendar True %}
+                    <a class="get_others_calendar" url="/calendar/{{ m.id }}/" href="#third">{{ m }} </a>
+                {% else %}
+                    {% ifequal calendar|staff_in:m True %}
+                        <a class="get_others_calendar" url="/calendar/{{ m.id }}/" href="#third">{{ m }} </a>
+                    {% else %}
+                        {{ m }}
+                    {% endifequal %}
+                {% endifequal %}
+                {% if forloop.counter0|divisibleby:10  %}
+                    </br>
+                {% endif %}
+            {% endfor %}
+        &nbsp;
+        </dd>
+    </dl>
+    <div class="overlay"></div>
+    <div id="modal1_{{ task.id }}_detail" class="modal" style="display:none;">
+        <div id="comment_detail_{{ task.id }}">aa</div>
+        <form method="post" class="form_comment" id="form_comment_id_{{ task.id }}"
+              action="/task/add_comment/p1{{ task.id }}p21p31/" style="text-align: center;width:auto;">
+            {{ nf.as_p }}
+            <input type="button" value="提交" class="btn btn-primary form_comment"onclick="$('#form_comment_id_{{ task.id }}').submit()">&nbsp;&nbsp;&nbsp;
+            <button class="closeBtn btn btn-primary">返回</button>
+        </form>
 
-</div>
-{% include "filebrowser.html" %}
+    </div>
+    {% include "filebrowser.html" %}
 
-<script>
-    $(document).ready(function() {
-        strUrl=window.location.href;
-        arrUrl=strUrl.split("/");
-        strPage=arrUrl[arrUrl.length-1];
-        if(strPage==null||strPage.trim()=="")
-            strPage=arrUrl[arrUrl.length-2];
-        if(strPage=="show_task")
-        {
-            $('.task_head_first').attr('style','display: none');
-        }
-        else{
-            $('.task_head_first').attr('style','display: inline');
-        }
-        $(document).on('click','.setFileBrowserUrl',function(){
-            var url=$(this).attr('name');
-            $('#task_file_iframe').attr('src','/filebrowser/browse'+url);
+    <script>
+        $(document).ready(function() {
+            strUrl=window.location.href;
+            arrUrl=strUrl.split("/");
+            strPage=arrUrl[arrUrl.length-1];
+            if(strPage==null||strPage.trim()=="")
+                strPage=arrUrl[arrUrl.length-2];
+            if(strPage=="show_task")
+            {
+                $('.task_head_first').attr('style','display: none');
+            }
+            else{
+                $('.task_head_first').attr('style','display: inline');
+            }
+            $(document).on('click','.setFileBrowserUrl',function(){
+                var url=$(this).attr('name');
+                $('#task_file_iframe').attr('src','/filebrowser/browse'+url);
+            });
         });
-    });
 
-</script>
+    </script>
+</div>

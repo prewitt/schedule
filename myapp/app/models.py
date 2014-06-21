@@ -7,7 +7,7 @@ from mptt.models import MPTTModel, TreeForeignKey
 
 class Role(models.Model):
     name = models.CharField(max_length=20)
-    level = models.PositiveSmallIntegerField(default=5)#the smaller the power
+    level = models.PositiveSmallIntegerField(default=5)  #the smaller the power
     editStaff = models.BooleanField(default=True)
     editTask = models.BooleanField(default=True)
     editCalendar = models.BooleanField(default=True)
@@ -21,7 +21,7 @@ class Role(models.Model):
 class Staff(models.Model):
     user = models.OneToOneField(User, unique=True, related_name='staff')
     name = models.CharField(max_length=20)
-    gender = models.BooleanField(default=True)#True:man
+    gender = models.BooleanField(default=True)  #True:man
     visible = models.BooleanField(default=True)
     role = models.ForeignKey(Role, related_name='staff')
     content = models.CharField(max_length=1024)
@@ -57,7 +57,7 @@ class Task(MPTTModel):
     executor = models.ManyToManyField(Staff, verbose_name='执行人', related_name='task', null=True)
     group = models.ManyToManyField(Group, verbose_name='所属组', related_name='group', blank=True, null=True)
     viewing = models.ManyToManyField(Staff, verbose_name='可见性', related_name='viewing', null=True)
-    inername = models.IntegerField(verbose_name='名称',blank=True, null=True)
+    inername = models.IntegerField(verbose_name='名称', blank=True, null=True)
     istemp = models.IntegerField(verbose_name='是否模板', default=0)
 
     class MPTTMeta:
@@ -169,3 +169,8 @@ class BugComment(models.Model):
     def __unicode__(self):
         return self.author.name + " at " + self.date + " said: " + self.content + "\n"
 
+
+class UnreadComment(models.Model):
+    task = models.ForeignKey(Task, related_name='unread_comment')
+    user = models.ForeignKey(Staff)
+    counts = models.IntegerField(verbose_name='条数')

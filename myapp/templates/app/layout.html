@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="ljq">
-{#    <meta http-equiv=refresh content="20">#}
+    {#    <meta http-equiv=refresh content="20">#}
     <!-- Le styles -->
 
     <link rel="stylesheet" type="text/css" href="{% static "css/bootstrap.css" %}"/>
@@ -16,22 +16,27 @@
     <script src="{% static "js/jquery-1.10.1.min.js" %}"></script>
     <script src="{% static "js/bootstrap.js" %}"></script>
     <script src="{% static "js/jquery.confirm.js" %}"></script>
+    <script src="{% static "js/miniyui-v1.61-min.js" %}"></script>
+    <script src="{% static "js/window.js" %}"></script>
     <script src="{% static "js/myajax.js" %}"></script>
+    <script src="{% static "js/perfect-scrollbar-0.4.10.with-mousewheel.min.js" %}"></script>
 
     <link rel="stylesheet" type="text/css" href="{% static "calendar/calendar.css" %}"/>
     {#<link rel="stylesheet" type="text/css" href="{% static 'css/normalize.css' %}">#}
     <link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/window.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/perfect-scrollbar-0.4.10.min.css' %}">
     <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
     <!--[if lt IE 9]>
       <script src="../assets/js/html5shiv.js"></script>
     <![endif]-->
     <script src="{% static "js/task_tree/jquery.jstree.js" %}"></script>
 
-    <script type='text/javascript' src="{% static 'js/jquery.modal.js' %}"></script>
+{#    <script type='text/javascript' src="{% static 'js/jquery.modal.js' %}"></script>#}
     <script type="text/javascript" charset="utf-8" language="javascript"
             src="{% static "js/dataTables/jquery.dataTables.min.js" %}"></script>
     <script type="text/javascript" charset="utf-8" language="javascript"
-                src="{% static "js/jquery.cookie.js" %}"></script>
+            src="{% static "js/jquery.cookie.js" %}"></script>
     {% if staff.role.exportFile %}
         <script type="text/javascript" charset="utf-8" language="javascript"
                 src="{% static "js/tableTools/TableTools.min.js" %}"></script>
@@ -41,6 +46,9 @@
 </head>
 
 <body>
+<div id="mload" style="display: none; top: 305.5px; left: 50%; margin: -16px 0px 0px -16px;">
+    <img src="{% static "img/loading.gif" %}">
+</div>
 {% block body_block %}{% endblock %}
 {% block nav_bar %}
     <div class="navbar navbar-inverse navbar-fixed-top">
@@ -57,86 +65,88 @@
     </div>
 
     <div class="container-fluid">
-    <div class="row-fluid">
-    <div class="span3 siderbar-fixed">
-        <div class="well sidebar-nav">
-            <ul class="nav nav-list">
-                <li class="nav-header">个人信息</li>
-                <li><strong>用户名</strong>：{{ staff.user.username }}</li>
-                <li><strong>真实姓名</strong>：{{ staff.name }}</li>
-                <li><strong>角色</strong>：{{ staff.role.name }}</li>
-                <li><strong>所属组</strong>：{% for group in staff.group.all %}
-                    {{ group.name }};
-                {% endfor %}</li>
-                <li><a class="change_password_select" href="/app/change_password/">修改密码</a></li>
-                <li><a href="/app/logout/">退出系统</a></li>
-
-                <li class="nav-header"><a class="index_select" href="/"><h4>首页</h4></a></li>
-
-{#                                        {% if staff.role.editMeeting %}#}
-                <li class="nav-header">通知会议管理</li>
-                <li><a class="create_notice_select" href="/notice/create_notice/" id="create_notice" >发布通知</a></li>
-                <li><a class="create_meeting_select" href="/meeting/create_meeting/" id="create_meeting">发布会议</a>
-                </li>
-                <li><a class="get_notice_select" href="/notice/get_notice/" >通知列表</a></li>
-                <li><a class="get_meeting_select" href="/meeting/get_meeting/" >会议列表</a></li>
-{#                                        {% endif %}#}
-
-                <li class="nav-header">项目管理</li>
-                <li><a class="add_task_select" href="/task/add_task/">创建项目</a></li>
-                <li><a class="created_task_select" href="/task/created_task/">我创建的项目</a></li>
-                <li><a class="doing_task_select" href="/task/doing_task/" >我负责的项目</a></li>
-                <li><a class="executed_task_select" href="/task/executed_task/" >我执行的项目</a></li>
-
-                <li><a class="show_task_select" href="/task/show_task/" >所有项目—树</a></li>
-                <li><a class="all_task_select" href="/task/all_task/">所有项目—列表</a></li>
-                {% if staff.role.editTask %}
-                <li><a class="taskTemplate_select" href="/task/taskTemplate/" >查看模板</a></li>
-                {% endif %}
-                <li class="nav-header">Bug管理</li>
-                <li><a class="add_bug_select" href="/bug/add_bug/" >创建Bug</a></li>
-                <li><a class="created_bug_select" href="/bug/created_bug/" >我创建的Bug</a></li>
-                <li><a class="principal_bug_select" href="/bug/principal_bug/" >我负责的Bug</a></li>
-                <li><a class="execute_bug_select" href="/bug/execute_bug/" >我执行的Bug</a></li>
-{#                <li><a class="get_method" url="/task/show_task/" href="#">所有Bug——树</a></li>#}
-                <li><a class="all_bug_select" href="/bug/all_bug/">所有Bug</a></li>
-
-                {% if staff.role.editStaff %}
-                    <li class="nav-header">人员管理</li>
-                    <li><a class="get_method" url="/staff/create/" id="create_staff" href="#">添加人员 </a></li>
-                    <li><a class="get_method" url="/staff/show/" id="show_staffs" href="#">管理人员</a></li>
-                    <li><a class="get_method" url="/staff/group/" id="show_group" href="#">管理小组</a></li>
-                    <li><a class="get_method" url="/staff/role/" href="#">管理权限</a></li>
-                {% endif %}
-                <li class="nav-header">日程管理</li>
-                <li><a url="/calendar/0/" id="manage_calendar" href="#">安排日程</a></li>
-                <li><a url="/calendar/list/" id="show_calendar" href="#">查看日程</a></li>
-                {#                        <li><a class="get_method" url="/calendar/today/" href="#">今日日程</a></li>#}
-
-            </ul>
-        </div>
-        <!--/.well -->
-    </div>
-
-    <div class="span9">
         <div class="row-fluid">
-           <div id="content">
-                <div id="first">
-                {% block first %}
-                {% endblock %}
+            <div class="span3 siderbar-fixed">
+                <div class="well sidebar-nav">
+                    <ul class="nav nav-list">
+                        <li class="nav-header">个人信息</li>
+                        <li><strong>用户名</strong>：{{ staff.user.username }}</li>
+                        <li><strong>真实姓名</strong>：{{ staff.name }}</li>
+                        <li><strong>角色</strong>：{{ staff.role.name }}</li>
+                        <li><strong>所属组</strong>：{% for group in staff.group.all %}
+                            {{ group.name }};
+                        {% endfor %}</li>
+                        <li><a class="change_password_select" href="/app/change_password/">修改密码</a></li>
+                        <li><a href="/app/logout/">退出系统</a></li>
+
+                        <li class="nav-header"><a class="index_select" href="/"><h4>首页</h4></a></li>
+
+                        {#                                        {% if staff.role.editMeeting %}#}
+                        <li class="nav-header">通知会议管理</li>
+                        <li><a class="create_notice_select" href="/notice/create_notice/" id="create_notice">发布通知</a>
+                        </li>
+                        <li><a class="create_meeting_select" href="/meeting/create_meeting/"
+                               id="create_meeting">发布会议</a>
+                        </li>
+                        <li><a class="get_notice_select" href="/notice/get_notice/">通知列表</a></li>
+                        <li><a class="get_meeting_select" href="/meeting/get_meeting/">会议列表</a></li>
+                        {#                                        {% endif %}#}
+
+                        <li class="nav-header">项目管理</li>
+                        <li><a class="add_task_select" href="/task/add_task/">创建项目</a></li>
+                        <li><a class="created_task_select" href="/task/created_task/">我创建的项目</a></li>
+                        <li><a class="doing_task_select" href="/task/doing_task/">我负责的项目</a></li>
+                        <li><a class="executed_task_select" href="/task/executed_task/">我执行的项目</a></li>
+
+                        <li><a class="show_task_select" href="/task/show_task/">所有项目—树</a></li>
+                        <li><a class="all_task_select" href="/task/all_task/">所有项目—列表</a></li>
+                        {% if staff.role.editTask %}
+                            <li><a class="taskTemplate_select" href="/task/taskTemplate/">查看模板</a></li>
+                        {% endif %}
+                        <li class="nav-header">Bug管理</li>
+                        <li><a class="add_bug_select" href="/bug/add_bug/">创建Bug</a></li>
+                        <li><a class="created_bug_select" href="/bug/created_bug/">我创建的Bug</a></li>
+                        <li><a class="principal_bug_select" href="/bug/principal_bug/">我负责的Bug</a></li>
+                        <li><a class="execute_bug_select" href="/bug/execute_bug/">我执行的Bug</a></li>
+                        {#                <li><a class="get_method" url="/task/show_task/" href="#">所有Bug——树</a></li>#}
+                        <li><a class="all_bug_select" href="/bug/all_bug/">所有Bug</a></li>
+
+                        {% if staff.role.editStaff %}
+                            <li class="nav-header">人员管理</li>
+                            <li><a class="get_method" url="/staff/create/" id="create_staff" href="#">添加人员 </a></li>
+                            <li><a class="get_method" url="/staff/show/" id="show_staffs" href="#">管理人员</a></li>
+                            <li><a class="get_method" url="/staff/group/" id="show_group" href="#">管理小组</a></li>
+                            <li><a class="get_method" url="/staff/role/" href="#">管理权限</a></li>
+                        {% endif %}
+                        <li class="nav-header">日程管理</li>
+                        <li><a url="/calendar/0/" id="manage_calendar" href="#">安排日程</a></li>
+                        <li><a url="/calendar/list/" id="show_calendar" href="#">查看日程</a></li>
+                        {#                        <li><a class="get_method" url="/calendar/today/" href="#">今日日程</a></li>#}
+
+                    </ul>
+                </div>
+                <!--/.well -->
+            </div>
+
+            <div class="span9">
+                <div class="row-fluid">
+                    <div id="content">
+                        <div id="first">
+                            {% block first %}
+                            {% endblock %}
+
+                        </div>
+                        <div id="second"></div>
+                        <div id="third"></div>
+                        <div id="fourth"></div>
+
+                    </div>
 
                 </div>
-           <div id="second"></div>
-           <div id="third"></div>
-           <div id="fourth"></div>
 
-           </div>
+            </div>
 
         </div>
-
-    </div>
-
-    </div>
         <!--/row-->
     </div>
     <hr>
@@ -145,6 +155,5 @@
         <p>&copy; Company 2013</p>
     </footer>
 {% endblock %}
-
 </body>
 </html>

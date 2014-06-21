@@ -8,7 +8,16 @@
     var YearAfterThis = "{{ YearAfterThis }}";
     var StaffID="{{ StaffID }}"
 </script>
-    {% include "messages.html" %}
+
+<style type="text/css">
+    .scroll_type { position:relative; margin:0px auto; padding:0px; width: 100%; height: 100px; overflow: hidden; }
+</style>
+<script>
+    jQuery(document).ready(function ($) {
+        $('.scroll_type').perfectScrollbar();
+    });
+</script>
+{% include "messages.html" %}
 <div class="span7 myCalendar">
     {% if not me  %}
         <h2 {% if not me %}style="display: inline"{% endif %}><strong>{{ staff.name }}</strong>的日程安排</h2>

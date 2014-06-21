@@ -2,6 +2,7 @@ body {
     padding-top: 60px;
     padding-bottom: 40px;
 }
+
 .sidebar-nav {
     padding: 9px 0;
 }
@@ -15,18 +16,31 @@ body {
     }
 }
 
-.siderbar-fixed {width:200px!important}
+.siderbar-fixed {
+    width: 200px !important
+}
+
 table {
     table-layout: fixed;
     word-wrap: break-word;
 }
+
 .table td {
-     border-top: none;
- }
+    border-top: none;
+}
+
 .hidden-me {
     display: none !important;
 }
+
 input.ie-fix-left, textarea.ie-fix-left {
     *margin-left: -20px;
 }
-.search_init{width:90%}
+
+.search_init {
+    width: 90%
+}
+
+.icon-red {
+    color: #e51400 !important;
+}

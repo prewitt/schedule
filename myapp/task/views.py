@@ -3,7 +3,7 @@
 from django.template import RequestContext
 from django.shortcuts import render_to_response, redirect
 from mptt.models import MPTTModel
-from app.models import Task, Comment, Group, Staff
+from app.models import Task, Comment, Group, Staff, UnreadComment
 from django import forms
 from django.http import HttpResponse
 from datetime import datetime
@@ -12,7 +12,7 @@ from django.contrib.auth.decorators import login_required
 from app.views import permission_required_with, valid_time, cache_on_auth
 from django.template import Template, Context
 from django.db.models import Q
-from myCalendar.views import updateSummary
+from myCalendar.views import appendSummaryPeriod
 from django.views.decorators.cache import cache_page
 from django.http import HttpResponseRedirect
 from django.core.cache import cache
@@ -212,12 +212,13 @@ def add_task(request):
 def created_task(request):
     context = RequestContext(request)
     tasks = Task.objects.filter(Q(istemp=0) & Q(creator=request.user.staff))
-
+    unread_comments = UnreadComment.objects.filter(user=request.user.staff)
     comment = Comment.objects.all()
     nf = CommentForm()
 
     return render_to_response('task/created_task.html',
-                              {'tasks': tasks, 'comments': comment, 'nf': nf, 'staff': request.user.staff}, context)
+                              {'tasks': tasks, 'comments': comment, 'unread_comments': unread_comments, 'nf': nf,
+                               'staff': request.user.staff}, context)
 
 
 @login_required(login_url="/app/login/")
@@ -227,9 +228,11 @@ def doing_task(request):
     context = RequestContext(request)
     tasks = Task.objects.filter(Q(principal=request.user.staff) & Q(istemp=0))
     comment = Comment.objects.all()
+    unread_comments = UnreadComment.objects.filter(user=request.user.staff)
     nf = CommentForm()
-    return render_to_response('task/doing_task.html', {'tasks': tasks, 'comments': comment, 'nf': nf,
-                                                       'staff': request.user.staff}, context)
+    return render_to_response('task/doing_task.html',
+                              {'tasks': tasks, 'comments': comment, 'unread_comments': unread_comments,
+                               'nf': nf, 'staff': request.user.staff}, context)
 
 
 @login_required(login_url="/app/login/")
@@ -239,9 +242,11 @@ def executed_task(request):
     context = RequestContext(request)
     tasks = request.user.staff.task.filter(istemp=0)
     comment = Comment.objects.all()
+    unread_comments = UnreadComment.objects.filter(user=request.user.staff)
     nf = CommentForm()
-    return render_to_response('task/executed_task.html', {'tasks': tasks, 'comments': comment, 'nf': nf,
-                                                          'staff': request.user.staff}, context)
+    return render_to_response('task/executed_task.html',
+                              {'tasks': tasks, 'comments': comment, 'unread_comments': unread_comments, 'nf': nf,
+                               'staff': request.user.staff}, context)
 
 
 @login_required(login_url="/app/login/")
@@ -273,9 +278,11 @@ def all_task(request):
     usr = request.user
     tasks = usr.staff.viewing.all()
     comment = Comment.objects.all()
+    unread_comments = UnreadComment.objects.filter(user=request.user.staff)
     nf = CommentForm()
     return render_to_response('task/all_task.html',
-                              {'tasks': tasks, 'comments': comment, 'nf': nf, 'staff': request.user.staff}, context)
+                              {'tasks': tasks, 'comments': comment, 'unread_comments': unread_comments, 'nf': nf,
+                               'staff': request.user.staff}, context)
 
 
 def getPath(task_id):
@@ -305,10 +312,11 @@ def show_detail(request, my_id):
     nf = CommentForm()
     enablecalendar = request.user.staff.role.editCalendar
     calendar = request.user.staff.visibleCalendar.all()
-
+    unread_comments = UnreadComment.objects.filter(user=request.user.staff)
     taskpath = getPath(my_id)
     return render_to_response('task/task_details.html',
-                              {'task': task, 'comments': comment, 'nf': nf, 'staff': request.user.staff,
+                              {'task': task, 'comments': comment, 'nf': nf, 'unread_comments': unread_comments,
+                               'staff': request.user.staff,
                                'calendar': calendar, 'enCalendar': enablecalendar, 'taskPath': taskpath}, context)
 
 
@@ -338,13 +346,63 @@ def comments(request, task_id, c_type):
         comment = CommentForm()
         return render_to_response('task/doing_task.html', {'staff': request.user.staff, 'comments': comment}, context)
 
+
+def add_unread_comment(task_id, author_id):
+    task = Task.objects.get(id=task_id)
+    creator = task.creator
+    principal = task.principal
+    executors = task.executor.all()
+    if author_id != creator.id:
+        uc = UnreadComment.objects.filter(Q(task=task) & Q(user=creator))
+        if uc is None:
+            uc = UnreadComment()
+            UnreadComment.objects.filter(uc.id).update(counts=uc.counts + 1)
+        else:
+            uc = UnreadComment()
+            uc.task = task
+            uc.user = creator
+            uc.counts = 1
+            uc.save()
+    if author_id != principal.id:
+        uc = UnreadComment.objects.filter(Q(task=task) & Q(user=principal))
+        if uc is None:
+            uc = UnreadComment()
+            UnreadComment.objects.filter(uc.id).update(counts=uc.counts + 1)
+        else:
+            uc = UnreadComment()
+            uc.task = task
+            uc.user = principal
+            uc.counts = 1
+            uc.save()
+    for e in executors:
+        if author_id != e.id:
+            uc = UnreadComment.objects.filter(Q(task=task) & Q(user=e))
+            if uc is None:
+                uc = UnreadComment()
+                UnreadComment.objects.filter(uc.id).update(counts=uc.counts + 1)
+            else:
+                uc = UnreadComment()
+                uc.task = task
+                uc.user = e
+                uc.counts = 1
+                uc.save()
+
+
+def delete_unread_comment(task_id, user):
+    uc = UnreadComment.objects.filter(Q(task=task_id) & Q(user=user))
+    if uc is not None:
+        uc.delete()
+
+
 @login_required(login_url="/app/login/")
 def get_comments(request, task_id):
     context = RequestContext(request)
     comments = Comment.objects.filter(task=task_id)
+    delete_unread_comment(task_id, request.user.staff)
     # print "comments"+task_id
     return render_to_response("task/get_comments.html",
-        {'comments':comments})
+                              {'comments': comments})
+
 
 @login_required(login_url="/app/login/")
 def get_feedbacks(request, task_id):
@@ -352,7 +410,8 @@ def get_feedbacks(request, task_id):
     comments = Comment.objects.filter(task=task_id)
     # print "comments"+task_id
     return render_to_response("task/get_feedbacks.html",
-        {'comments':comments})
+                              {'comments': comments})
+
 
 @login_required(login_url="/app/login/")
 #@permission_required_with('task')
@@ -365,11 +424,13 @@ def delete(request, task_id):
     tasks = Task.objects.filter(Q(creator=request.user.staff) & Q(istemp=0))
 
     comment = Comment.objects.all()
+    unread_comments = UnreadComment.objects.filter(user=request.user.staff)
     nf = CommentForm()
     # cache.clear()
     messages.success(request, '删除任务成功！')
     return render_to_response('task/created_task.html',
-                              {'tasks': tasks, 'comments': comment, 'nf': nf, 'staff': request.user.staff}, context)
+                              {'tasks': tasks, 'comments': comment, 'unread_comments': unread_comments,
+                               'nf': nf, 'staff': request.user.staff}, context)
 
 
 @login_required(login_url="/app/login/")
@@ -407,10 +468,12 @@ def checked(request, task_id):
     # cache.clear()
     tasks = Task.objects.filter(Q(creator=request.user.staff) & Q(istemp=0))
     comment = Comment.objects.all()
+    unread_comments = UnreadComment.objects.filter(user=request.user.staff)
     nf = CommentForm()
     messages.success(request, '修改成功！')
     return render_to_response('task/created_task.html',
-                              {'tasks': tasks, 'comments': comment, 'nf': nf, 'staff': request.user.staff}, context)
+                              {'tasks': tasks, 'comments': comment, 'unread_comments': unread_comments, 'nf': nf,
+                               'staff': request.user.staff}, context)
 
 
 @login_required(login_url="/app/login/")
@@ -422,9 +485,11 @@ def affirm(request, task_id):
     # cache.clear()
     tasks = Task.objects.filter(Q(principal=request.user.staff) & Q(istemp=0))
     comment = Comment.objects.all()
+    unread_comments = UnreadComment.objects.filter(user=request.user.staff)
     nf = CommentForm()
-    return render_to_response('task/doing_task.html', {'tasks': tasks, 'comments': comment, 'nf': nf,
-                                                       'staff': request.user.staff})
+    return render_to_response('task/doing_task.html',
+                              {'tasks': tasks, 'comments': comment, 'unread_comments': unread_comments, 'nf': nf,
+                               'staff': request.user.staff})
 
 
 @login_required(login_url="/app/login/")
@@ -436,9 +501,11 @@ def submit(request, task_id):
     # cache.clear()
     tasks = Task.objects.filter(Q(principal=request.user.staff) & Q(istemp=0))
     comment = Comment.objects.all()
+    unread_comments = UnreadComment.objects.filter(user=request.user.staff)
     nf = CommentForm()
-    return render_to_response('task/doing_task.html', {'tasks': tasks, 'comments': comment, 'nf': nf,
-                                                       'staff': request.user.staff})
+    return render_to_response('task/doing_task.html',
+                              {'tasks': tasks, 'comments': comment, 'unread_comments': unread_comments, 'nf': nf,
+                               'staff': request.user.staff})
 
 
 @login_required(login_url="/app/login/")
@@ -540,15 +607,15 @@ def modify(request, task_id):
                 else:
                     messages.success(request, '修改成功')
             elif parent_obj is not None and parent == "None":
-                    m_task.move_to(None, "first-child")
-                    messages.success(request, '修改成功')
+                m_task.move_to(None, "first-child")
+                messages.success(request, '修改成功')
             else:
                 messages.success(request, '修改成功')
 
-            # cache.clear()
-            #print "source:"+source
-            #if source == '1':
-            #return redirect("/task/created_task/")
+                # cache.clear()
+                #print "source:"+source
+                #if source == '1':
+                #return redirect("/task/created_task/")
 
     task = Task.objects.get(id=task_id)
     group = Group.objects.all()
@@ -623,26 +690,29 @@ def add_comment(request, task_id, c_type, doc):
             nf_comment.save()
             # cache.clear()
             # messages.success(request, '提交成功')
+            add_unread_comment(task_id, request.user.staff.id)
             return HttpResponse('提交成功')
         else:
             return HttpResponse('提交失败,内容不能为空')
             # messages.error(request, '提交失败,内容不能为空')
-
+    unread_comments = UnreadComment.objects.filter(user=request.user.staff)
     if doc == '5':
         tasks = request.user.staff.viewing.all()
         comment = Comment.objects.all()
         nf = CommentForm()
         #cache.clear()
         return render_to_response('task/all_task.html',
-                                  {'tasks': tasks, 'comments': comment, 'nf': nf, 'staff': request.user.staff},
+                                  {'tasks': tasks, 'comments': comment, 'unread_comments': unread_comments, 'nf': nf,
+                                   'staff': request.user.staff},
                                   context)
     if doc == '4':
         tasks = request.user.staff.task.all()
         comment = Comment.objects.all()
         nf = CommentForm()
         #cache.clear()
-        return render_to_response('task/executed_task.html', {'tasks': tasks, 'comments': comment, 'nf': nf,
-                                                              'staff': request.user.staff}, context)
+        return render_to_response('task/executed_task.html',
+                                  {'tasks': tasks, 'comments': comment, 'unread_comments': unread_comments, 'nf': nf,
+                                   'staff': request.user.staff}, context)
 
     if doc == '3':
         # task = Task.objects.get(id=task_id)
@@ -666,7 +736,8 @@ def add_comment(request, task_id, c_type, doc):
         nf = CommentForm()
         #cache.clear()
         return render_to_response('task/doing_task.html',
-                                  {'tasks': tasks, 'comments': comment, 'nf': nf, 'staff': request.user.staff},
+                                  {'tasks': tasks, 'comments': comment, 'unread_comments': unread_comments, 'nf': nf,
+                                   'staff': request.user.staff},
                                   context)
     elif doc == '1':
         tasks = Task.objects.filter(Q(creator=request.user.staff) & Q(istemp=0))
@@ -674,7 +745,8 @@ def add_comment(request, task_id, c_type, doc):
         nf = CommentForm()
         #cache.clear()
         return render_to_response('task/created_task.html',
-                                  {'tasks': tasks, 'comments': comment, 'nf': nf, 'staff': request.user.staff}, context)
+                                  {'tasks': tasks, 'comments': comment, 'unread_comments': unread_comments, 'nf': nf,
+                                   'staff': request.user.staff}, context)
     else:
         return render_to_response('error.html', context)
 
@@ -683,27 +755,31 @@ def add_comment(request, task_id, c_type, doc):
 def add_schedule(request, task_id, doc):
     context = RequestContext(request)
     staff_id = request.user.staff.id
-    updateSummary(int(staff_id), int(task_id))
+    appendSummaryPeriod(int(staff_id), int(task_id))
     # cache.clear()
     messages.success(request, '加入日程成功')
+    unread_comments = UnreadComment.objects.filter(user=request.user.staff)
     if doc == '1':
         tasks = Task.objects.filter(Q(creator=request.user.staff) & Q(istemp=0))
         comment = Comment.objects.all()
         nf = CommentForm()
         return render_to_response('task/created_task.html',
-                                  {'tasks': tasks, 'comments': comment, 'nf': nf, 'staff': request.user.staff}, context)
+                                  {'tasks': tasks, 'comments': comment, 'unread_comments': unread_comments, 'nf': nf,
+                                   'staff': request.user.staff}, context)
     elif doc == '2':
         tasks = Task.objects.filter(Q(principal=request.user.staff) & Q(istemp=0))
         comment = Comment.objects.all()
         nf = CommentForm()
-        return render_to_response('task/doing_task.html', {'tasks': tasks, 'comments': comment, 'nf': nf,
-                                                           'staff': request.user.staff}, context)
+        return render_to_response('task/doing_task.html',
+                                  {'tasks': tasks, 'comments': comment, 'unread_comments': unread_comments, 'nf': nf,
+                                   'staff': request.user.staff}, context)
     else:
         tasks = request.user.staff.task.all()
         comment = Comment.objects.all()
         nf = CommentForm()
-        return render_to_response('task/executed_task.html', {'tasks': tasks, 'comments': comment, 'nf': nf,
-                                                              'staff': request.user.staff}, context)
+        return render_to_response('task/executed_task.html',
+                                  {'tasks': tasks, 'comments': comment, 'unread_comments': unread_comments, 'nf': nf,
+                                   'staff': request.user.staff}, context)
 
 
 def settemppop(task, name, bdate, edate, content, importance):

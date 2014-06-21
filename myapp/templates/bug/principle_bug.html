@@ -99,7 +99,7 @@
                     <a class="modalLink get_comments_bug btn btn-small btn-primary "
                    href="#modal1_{{ bug.id }}" bug_id="{{ bug.id }}">评论</a>
                     {#<button class="btn btn-primary task_button" id='schedule' onclick="inSchedule()">加入日程</button>#}
-                    <a class="btn  btn-small btn-primary " href="/bug/schedule/p1{{ bug.id }}p22/"onclick="if(confirm('是否将此项内容加入今日的日程概括？')){return true;}return false;">
+                    <a class="btn  btn-small btn-primary " href="/bug/schedule/p1{{ bug.id }}p22/"onclick="if(confirm('是否将此项内容加入日程概括(视任务跨度,可能需要较长时间)？')){miniYUI.win.showLoading();return true;}return false;">
                         日程
                     </a>
                      {% ifequal bug.state 1 %}

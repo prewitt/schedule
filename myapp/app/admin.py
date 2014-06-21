@@ -1,5 +1,5 @@
 from django.contrib import admin
-from app.models import Staff,Role,Group,Task,Comment,Meeting,Notice,Calendar
+from app.models import Staff, Role, Group, Task, Comment, Meeting, Notice, Calendar
 from mptt.admin import ModelAdmin
 
 admin.site.register(Staff)

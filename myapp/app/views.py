@@ -10,7 +10,7 @@ from  django.shortcuts import render_to_response, render
 from  django.http import HttpResponse, HttpResponseRedirect
 from  django.contrib.auth import authenticate, login, logout
 from django import forms
-from models import Staff, Task
+from models import Staff, Task, UnreadComment
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from  django.contrib.auth.models import User, check_password, make_password
@@ -24,7 +24,7 @@ from django.utils.decorators import available_attrs
 from django.core.cache import cache
 from django.views.decorators.cache import never_cache
 from  datetime import datetime, date, timedelta
-from  models import Meeting
+from  models import Meeting, Comment
 from django.views.decorators.cache import cache_page
 # 检验输入时间是否合法
 def valid_time(date_text):
@@ -44,6 +44,7 @@ def get_week_days(year, week):
     dlt = timedelta(days=(week - 1) * 7)
     return d + dlt, d + dlt + timedelta(days=6)
 
+
 # used for md5 ,save password
 class MyPasswordHasher(BasePasswordHasher):
     algorithm = 'md5_16'
@@ -59,6 +60,7 @@ class MyPasswordHasher(BasePasswordHasher):
         return SortedDict([
             (('hash'), mask_hash(encoded)),
         ])
+
 
 # custom backend for using authenticate
 class MyCustomBackend:
@@ -88,6 +90,7 @@ class MyCustomBackend:
         except User.DoesNotExist:
             return None
 
+
 # set a context
 #def my_staff(request):
 #    me_staff =request.user.staff
@@ -104,9 +107,10 @@ def cache_on_auth(timeout):
 
     return decorator
 
+
 #with parameter
 def permission_required_with(parameter):
-    def decorator(view_func): #second wrapper gets view_func
+    def decorator(view_func):  #second wrapper gets view_func
         @wraps(view_func, assigned=available_attrs(view_func))
         def wrapper(request, *args, **kwargs):
             if parameter == 'task':
@@ -131,7 +135,7 @@ def permission_required_with(parameter):
                 return view_func(request, *args, **kwargs)
             elif parameter == 'notice':
                 if not request.user.staff.role.editMeeting:
-                    permission = '通知权限'            #if item_id == parameter:
+                    permission = '通知权限'  #if item_id == parameter:
                     return render_to_response('error.html', {'permission': permission})
                 return view_func(request, *args, **kwargs)
             permission = '未知参数'
@@ -174,6 +178,14 @@ def user_logout(request):
     return HttpResponseRedirect('/')
 
 
+class CommentForm(forms.ModelForm):
+    content = forms.Textarea()
+
+    class Meta:
+        model = Comment
+        exclude = ('author', 'date', 'type', 'task')
+
+
 @login_required(login_url="/app/login/")
 # @cache_on_auth(60 * 15)
 def index(request):
@@ -193,6 +205,9 @@ def index(request):
     submit_task = me.directed.filter(Q(state=2) & Q(istemp=0)).order_by('end_date')
     check_task = me.created.filter(Q(state=3) & Q(istemp=0)).order_by('end_date')
     #check_task = Task.objects.all()
+    comment = Comment.objects.all()
+    unread_comments = UnreadComment.objects.filter(user=request.user.staff)
+    nf = CommentForm()
 
     #cache.clear()
     return render_to_response('app/index.html',
@@ -203,7 +218,12 @@ def index(request):
                                'submit_task': submit_task,
                                'check_task': check_task,
                                'week_num_joined': len(week_meeting_joined),
-                               'week_num_launched': len(week_meeting_launched)}, context)
+                               'week_num_launched': len(week_meeting_launched),
+                               'comments': comment,
+                               'unread_comments': unread_comments,
+                               'nf': nf
+                              }, context)
+
 
 def change_password(request):
     context = RequestContext(request)

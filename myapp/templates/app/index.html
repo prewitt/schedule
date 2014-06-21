@@ -1,13 +1,15 @@
 {% extends "app/layout.html" %}
 {% load dictionary_extras %}
 {% block first %}
-{% include "messages.html" %}
-{% include "dataTables.html" %}
-{% include "frame.html" %}
+    {% include "messages.html" %}
+    {% include "dataTables.html" %}
+    {% include "frame.html" %}
     <legend><h1>首页</h1></legend>
     <div class="row-fluid">
     <div class="span6">
-    <h2>待处理项目<small>每项最多显示5条</small></h2>
+    <h2>待处理项目
+        <small>每项最多显示5条</small>
+    </h2>
     <h3>待确认</h3>
     <table class="table  table_show">
         <thead>
@@ -19,7 +21,7 @@
             <th>任务状态</th>
             <th>等级</th>
             <th>完成标志</th>
-            <th>所属任务</th>
+            <th>操作</th>
         </tr>
         </thead>
         <tbody>
@@ -45,7 +47,39 @@
                 <td>
                     {{ task.finish|sub_str:13 }}
                 </td>
-                <td>{{ task.parent }}</td>
+                <td>
+                    <a class="modalLink get_feedbacks btn  btn-mini btn-primary " task_id="{{ task.id }}"
+                       href="#modal2_{{ task.id }}">反馈</a>
+                    {% ifequal unread_comments|unrd_cmmt:task True %}
+                        <a class="modalLink get_comments btn  btn-mini btn-warning" task_id="{{ task.id }}"
+                           href="#modal1_{{ task.id }}">评论</a>
+                    {% else %}
+                        <a class="modalLink get_comments btn  btn-mini btn-primary" task_id="{{ task.id }}"
+                           href="#modal1_{{ task.id }}">评论</a>
+                    {% endifequal %}
+                    <a class="btn btn-mini  btn-primary " href="/task/schedule/p1{{ task.id }}p22/"
+                       onclick="if(confirm('是否将此项内容加入日程概括(视任务跨度,可能需要较长时间)？')){miniYUI.win.showLoading();return true;}return false;">
+                        日程
+                    </a>
+                    {% ifequal task.state 1 %}
+                        <a
+                                class="btn btn-mini btn-danger "
+                                type="button"
+                                href="/task/affirm/{{ task.id }}/"
+                                >
+                            确认
+                        </a>
+                    {% endifequal %}
+                    {% ifequal task.state 2 %}
+                        <a
+                                class="btn btn-mini btn-info "
+                                type="button"
+                                href="/task/submit/{{ task.id }}/"
+                                >
+                            提交
+                        </a>
+                    {% endifequal %}
+                </td>
             </tr>
         {% endfor %}
         </tbody>
@@ -60,7 +94,7 @@
             <th>任务状态</th>
             <th>等级</th>
             <th>完成标志</th>
-            <th>所属任务</th>
+            <th>操作</th>
             {#            <th>所属组</th>#}
             {#            <th >创建人</th>#}
             {#            <th>执行人</th>#}
@@ -89,7 +123,40 @@
                 <td>
                     {{ task.finish|sub_str:13 }}
                 </td>
-                <td>{{ task.parent }}</td>
+                <td>
+                    <a class="modalLink get_feedbacks btn  btn-mini btn-primary " task_id="{{ task.id }}"
+                       href="#modal2_{{ task.id }}">反馈</a>
+                    {% ifequal unread_comments|unrd_cmmt:task True %}
+                        <a class="modalLink get_comments btn  btn-mini btn-warning" task_id="{{ task.id }}"
+                           href="#modal1_{{ task.id }}">评论</a>
+                    {% else %}
+                        <a class="modalLink get_comments btn  btn-mini btn-primary" task_id="{{ task.id }}"
+                           href="#modal1_{{ task.id }}">评论</a>
+                    {% endifequal %}
+
+                    <a class="btn btn-mini  btn-primary " href="/task/schedule/p1{{ task.id }}p22/"
+                       onclick="if(confirm('是否将此项内容加入日程概括(视任务跨度,可能需要较长时间)？')){miniYUI.win.showLoading();return true;}return false;">
+                        日程
+                    </a>
+                    {% ifequal task.state 1 %}
+                        <a
+                                class="btn btn-mini btn-danger "
+                                type="button"
+                                href="/task/affirm/{{ task.id }}/"
+                                >
+                            确认
+                        </a>
+                    {% endifequal %}
+                    {% ifequal task.state 2 %}
+                        <a
+                                class="btn btn-mini btn-info "
+                                type="button"
+                                href="/task/submit/{{ task.id }}/"
+                                >
+                            提交
+                        </a>
+                    {% endifequal %}
+                </td>
 
             </tr>
         {% endfor %}
@@ -106,15 +173,15 @@
             <th>任务状态</th>
             <th>等级</th>
             <th>完成标志</th>
-            <th>所属任务</th>
+            <th>操作</th>
             {#            <th>所属组</th>#}
             {#            <th>负责人</th>#}
             {#            <th>执行人</th>#}
         </tr>
         </thead>
         <tbody>
-{#        {% for task in check_task|slice:":10" %}#}
-          {% for task in check_task|slice:":5" %}
+        {#        {% for task in check_task|slice:":10" %}#}
+        {% for task in check_task|slice:":5" %}
             <tr>
                 <td>
 
@@ -140,7 +207,40 @@
                     {{ task.finish|sub_str:13 }}
                 </td>
                 <td>
-                    {{ task.parent }}
+                    <a class="btn  btn-mini btn-primary "
+                       href="/task/modify/{{ task.id }}/" target="_blank"
+                            >
+                        修改
+                    </a>
+                    <a
+                            class="btn  btn-mini btn-primary"
+                            href="/task/delete/{{ task.id }}/"
+                            onclick="if(confirm('如果删除该任务，其子任务也将被删除，确定要删除吗？')){return true;}return false;">
+                        删除
+                    </a>
+                    <a class="modalLink get_feedbacks btn  btn-mini btn-primary " task_id="{{ task.id }}"
+                       href="#modal2_{{ task.id }}">反馈</a>
+                    {% ifequal unread_comments|unrd_cmmt:task True %}
+                        <a class="modalLink get_comments btn  btn-mini btn-warning" task_id="{{ task.id }}"
+                           href="#modal1_{{ task.id }}">评论</a>
+                    {% else %}
+                        <a class="modalLink get_comments btn  btn-mini btn-primary" task_id="{{ task.id }}"
+                           href="#modal1_{{ task.id }}">评论</a>
+                    {% endifequal %}
+                    {#                    <button class="btn btn-primary task_button" id='schedule' onclick="inSchedule()">加入日程</button>#}
+                    <a class="btn  btn-mini btn-primary " href="/task/schedule/p1{{ task.id }}p21/"
+                       onclick="if(confirm('是否将此项内容加入日程概括(视任务跨度,可能需要较长时间)？')){miniYUI.win.showLoading();return true;}return false;">
+                        日程
+                    </a>
+                    {% ifequal task.state 3 %}
+                        <a
+                                class="btn  btn-mini btn-warning "
+                                href="/task/checked/{{ task.id }}/"
+                                onclick="if(confirm('确定把项目状态变更为[结束]？')){return true;}return false;">
+                            通过
+                        </a>
+                    {% endifequal %}
+
                 </td>
             </tr>
         {% endfor %}
@@ -149,8 +249,12 @@
 
     </div>
     <div class="span6">
-    <h2>近期会议<small>每项最多显示10条</small></h2>
-        <h3>我创建的<small>本周{{ week_num_launched }}个会议</small></h3>
+        <h2>近期会议
+            <small>每项最多显示10条</small>
+        </h2>
+        <h3>我创建的
+            <small>本周{{ week_num_launched }}个会议</small>
+        </h3>
         <table class="table  table_show">
             <thead>
             <tr>
@@ -164,7 +268,8 @@
             <tbody>
             {% for meeting in launched_meeting|slice:":10" %}
                 <tr>
-                <td><a class="detail_button" href="#second" url="/meeting/detail_meeting/{{ meeting.id }}/">{{ meeting.name }}</a></td>
+                    <td><a class="detail_button" href="#second"
+                           url="/meeting/detail_meeting/{{ meeting.id }}/">{{ meeting.name }}</a></td>
                     <td>{{ meeting.time|date:"Y-m-d" }}</td>
                     <td>{{ meeting.place }}</td>
                     <td>
@@ -189,7 +294,9 @@
             </tbody>
         </table>
 
-        <h3>待参加的<small>本周{{ week_num_joined }}个会议</small></h3>
+        <h3>待参加的
+            <small>本周{{ week_num_joined }}个会议</small>
+        </h3>
         <table class="table table_show">
             <thead>
             <tr>
@@ -203,7 +310,8 @@
             <tbody>
             {% for meeting in joined_meeting|slice:":10" %}
                 <tr>
-                <td><a class="detail_button" href="#second" url="/meeting/detail_meeting/{{ meeting.id }}/">{{ meeting.name }}</a></td>
+                    <td><a class="detail_button" href="#second"
+                           url="/meeting/detail_meeting/{{ meeting.id }}/">{{ meeting.name }}</a></td>
                     <td>{{ meeting.time|date:"Y-m-d" }}</td>
                     <td>{{ meeting.place }}</td>
                     <td>
@@ -231,9 +339,84 @@
     </div>
 
     </div>
-    
-        <script>
-     $('.nav li').removeClass('active');
-     $('.index_select').parent().addClass('active');
+    <div class="overlay"></div>
+    {% for task in affirm_task %}
+        <div id="modal2_{{ task.id }}" class="modal"
+             style="display:none;margin: 0 auto;padding-left:15px;padding-top:10px;">
+            <div id="feedback_{{ task.id }}">
+            </div>
+            <form method="post" class="form_comment"
+                  action="/task/add_comment/p1{{ task.id }}p22p31/" style="text-align: center;width:auto;">
+                {{ nf.as_p }}
+                <input type="submit" value="提交" class="btn btn-primary task_button"/>&nbsp&nbsp&nbsp
+                <button class="closeBtn btn btn-primary task_button">返回</button>
+            </form>
+        </div>
+    {% endfor %}
+    {% for task in affirm_task %}
+        <div id="modal1_{{ task.id }}" class="modal"
+             style="display:none;margin: 0 auto;padding-left:15px;padding-top:10px;">
+            <div id="comment_{{ task.id }}"></div>
+            <form method="post" class="form_comment"
+                  action="/task/add_comment/p1{{ task.id }}p21p31/" style="text-align: center;width:auto;">
+                {{ nf.as_p }}
+                <input type="submit" value="提交" class="btn btn-primary task_button"/>&nbsp&nbsp&nbsp
+                <button class="closeBtn btn btn-primary task_button">返回</button>
+            </form>
+        </div>
+    {% endfor %}
+    {% for task in submit_task %}
+        <div id="modal2_{{ task.id }}" class="modal"
+             style="display:none;margin: 0 auto;padding-left:15px;padding-top:10px;">
+            <div id="feedback_{{ task.id }}">
+            </div>
+            <form method="post" class="form_comment"
+                  action="/task/add_comment/p1{{ task.id }}p22p31/" style="text-align: center;width:auto;">
+                {{ nf.as_p }}
+                <input type="submit" value="提交" class="btn btn-primary task_button"/>&nbsp&nbsp&nbsp
+                <button class="closeBtn btn btn-primary task_button">返回</button>
+            </form>
+        </div>
+    {% endfor %}
+    {% for task in submit_task %}
+        <div id="modal1_{{ task.id }}" class="modal"
+             style="display:none;margin: 0 auto;padding-left:15px;padding-top:10px;">
+            <div id="comment_{{ task.id }}"></div>
+            <form method="post" class="form_comment"
+                  action="/task/add_comment/p1{{ task.id }}p21p31/" style="text-align: center;width:auto;">
+                {{ nf.as_p }}
+                <input type="submit" value="提交" class="btn btn-primary task_button"/>&nbsp&nbsp&nbsp
+                <button class="closeBtn btn btn-primary task_button">返回</button>
+            </form>
+        </div>
+    {% endfor %}
+    {% for task in check_task %}
+        <div id="modal2_{{ task.id }}" class="modal"
+             style="display:none;margin: 0 auto;padding-left:15px;padding-top:10px;">
+            <div id="feedback_{{ task.id }}">
+            </div>
+            <form method="post" class="form_comment"
+                  action="/task/add_comment/p1{{ task.id }}p22p31/" style="text-align: center;width:auto;">
+                {{ nf.as_p }}
+                <input type="submit" value="提交" class="btn btn-primary task_button"/>&nbsp&nbsp&nbsp
+                <button class="closeBtn btn btn-primary task_button">返回</button>
+            </form>
+        </div>
+    {% endfor %}
+    {% for task in check_task %}
+        <div id="modal1_{{ task.id }}" class="modal"
+             style="display:none;margin: 0 auto;padding-left:15px;padding-top:10px;">
+            <div id="comment_{{ task.id }}"></div>
+            <form method="post" class="form_comment"
+                  action="/task/add_comment/p1{{ task.id }}p21p31/" style="text-align: center;width:auto;">
+                {{ nf.as_p }}
+                <input type="submit" value="提交" class="btn btn-primary task_button"/>&nbsp&nbsp&nbsp
+                <button class="closeBtn btn btn-primary task_button">返回</button>
+            </form>
+        </div>
+    {% endfor %}
+    <script>
+        $('.nav li').removeClass('active');
+        $('.index_select').parent().addClass('active');
     </script>
 {% endblock %}
