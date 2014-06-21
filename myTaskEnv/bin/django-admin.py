@@ -1,4 +1,4 @@
-#!/home/prewitt/ProjectFiles/schedule/myTaskEnv/bin/python
+#!/root/schedule/myTaskEnv/bin/python
 from django.core import management
 
 if __name__ == "__main__":

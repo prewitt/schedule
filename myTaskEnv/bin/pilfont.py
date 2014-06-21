@@ -1,4 +1,3 @@
-#!/home/prewitt/ProjectFiles/schedule/myTaskEnv/bin/python
 #
 # The Python Imaging Library
 # $Id$
@@ -10,23 +9,22 @@
 # 2002-03-10 fl   use "from PIL import"
 #
 
-from __future__ import print_function
-
 VERSION = "0.4"
 
-import glob, sys
+import site
+import glob, os, sys
 
 # drivers
 from PIL import BdfFontFile
 from PIL import PcfFontFile
 
 if len(sys.argv) <= 1:
-    print("PILFONT", VERSION, "-- PIL font compiler.")
-    print()
-    print("Usage: pilfont fontfiles...")
-    print()
-    print("Convert given font files to the PIL raster font format.")
-    print("This version of pilfont supports X BDF and PCF fonts.")
+    print "PILFONT", VERSION, "-- PIL font compiler."
+    print
+    print "Usage: pilfont fontfiles..."
+    print
+    print "Convert given font files to the PIL raster font format."
+    print "This version of pilfont supports X BDF and PCF fonts."
     sys.exit(1)
 
 files = []
@@ -35,7 +33,7 @@ for f in sys.argv[1:]:
 
 for f in files:
 
-    print(f + "...", end=' ')
+    print f + "...",
 
     try:
 
@@ -50,7 +48,7 @@ for f in files:
         p.save(f)
 
     except (SyntaxError, IOError):
-        print("failed")
+        print "failed"
 
     else:
-        print("OK")
+        print "OK"
