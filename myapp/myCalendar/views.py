@@ -27,12 +27,12 @@ def named_month(pMonthNumber):
 
 @login_required(login_url="/app/login/")
 #@permission_required_with('calendar')
-def home(request, pUserID):
+def home(request, pStaffID):
     """
     Show calendar of events this month
     """
     lToday = datetime.datetime.now()
-    return calendar(request, lToday.year, lToday.month, pUserID)
+    return calendar(request, lToday.year, lToday.month, pStaffID)
 
 
 @login_required(login_url="/app/login/")

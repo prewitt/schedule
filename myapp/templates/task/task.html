@@ -67,8 +67,9 @@
                                         "任务截止日期：{{ node.end_date|date:"Y-m-d" }}" +
                                         "<div id='task_node_{{ node.id }}'></div>",
                                 "metadata": {"href": "/task/task_detail/" + {{ node.id }} +"/"},
-                                {#   {% else %}#}
-                                {#  data: "您没有权限查看该任务",#}
+                            {% else %}
+                                attr: {"rel": "directory", id: "{{ node.id }}", style: "display:none"},
+                                data: "您没有权限查看该任务",
                             {% endifequal %}
                             children: [{{ children }}]
                         },
@@ -126,16 +127,16 @@
 
             var ii = 0;
             {% recursetree tasks %}
-                {% ifequal map_task|dict_access:node.id 1 %}
-                    if (ii < 10) {
-                        {#                        $("#" +{{ node.id }}).show();#}
-                        $("#" +{{ node.id }}).css("display", "block");
-                        {{ children }}
-                        {% if node.is_root_node %}
-                            ++ii;
-                        {% endif %}
-                    }
-                {% endifequal %}
+                {# {% ifequal map_task|dict_access:node.id 1 %}#}
+                if (ii < 10) {
+                    {# $("#" +{{ node.id }}).show();#}
+                    $("#" +{{ node.id }}).css("display", "block");
+                    {{ children }}
+                    {% if node.is_root_node %}
+                        ++ii;
+                    {% endif %}
+                }
+                {# {% endifequal %}#}
             {% endrecursetree %}
         });
 
@@ -201,16 +202,16 @@
             $("#taskTree").jstree("refresh");
 
             {% recursetree tasks %}
-                {% ifequal map_task|dict_access:node.id 1 %}
-                    if (ii < counts) {
-                        {# $("#" +{{ node.id }}).show();#}
-                        $("#" +{{ node.id }}).css("display", "block");
-                        {{ children }}
-                        {% if node.is_root_node %}
-                            ++ii;
-                        {% endif %}
-                    }
-                {% endifequal %}
+                {# {% ifequal map_task|dict_access:node.id 1 %}#}
+                if (ii < counts) {
+                    {# $("#" +{{ node.id }}).show();#}
+                    $("#" +{{ node.id }}).css("display", "block");
+                    {{ children }}
+                    {% if node.is_root_node %}
+                        ++ii;
+                    {% endif %}
+                }
+                {# {% endifequal %}#}
             {% endrecursetree %}
         });
     });
